@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced DOOM - Professional Edition</title>
+    <title>Ultimate DOOM 3D - Maximum Edition</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -18,7 +18,6 @@
             background: #000;
             overflow: hidden;
             user-select: none;
-            cursor: none;
         }
         
         #gameContainer {
@@ -26,14 +25,52 @@
             width: 100vw;
             height: 100vh;
             background: #000;
+            cursor: none;
         }
         
         #gameCanvas {
             display: block;
             background: #000;
-            image-rendering: pixelated;
+            image-rendering: optimizeSpeed;
             image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
             image-rendering: crisp-edges;
+            image-rendering: pixelated;
+        }
+        
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            z-index: 150;
+            pointer-events: none;
+        }
+        
+        #crosshair::before,
+        #crosshair::after {
+            content: '';
+            position: absolute;
+            background: #ff0000;
+            box-shadow: 0 0 10px #ff0000;
+        }
+        
+        #crosshair::before {
+            width: 20px;
+            height: 2px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+        
+        #crosshair::after {
+            width: 2px;
+            height: 20px;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
         }
         
         #ui {
@@ -42,33 +79,68 @@
             left: 20px;
             color: #ff0000;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             text-shadow: 0 0 10px #ff0000;
             z-index: 100;
         }
         
-        #crosshair {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 4px;
-            height: 4px;
-            background: #ff0000;
-            border-radius: 50%;
-            z-index: 150;
-            box-shadow: 0 0 10px #ff0000;
-        }
-        
-        #weaponInfo {
+        #weaponHUD {
             position: absolute;
             bottom: 20px;
             right: 20px;
             color: #00ff00;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 16px;
             text-shadow: 0 0 10px #00ff00;
             z-index: 100;
+        }
+        
+        #minimap {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 150px;
+            height: 150px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        
+        #healthBar {
+            position: absolute;
+            bottom: 100px;
+            left: 20px;
+            width: 200px;
+            height: 20px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        #healthFill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff0000, #ff6666);
+            transition: width 0.3s ease;
+        }
+        
+        #ammoBar {
+            position: absolute;
+            bottom: 70px;
+            left: 20px;
+            width: 200px;
+            height: 15px;
+            background: rgba(0,0,0,0.8);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        #ammoFill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #66ff66);
+            transition: width 0.3s ease;
         }
         
         #startScreen {
@@ -78,9 +150,9 @@
             transform: translate(-50%, -50%);
             text-align: center;
             color: #ff0000;
-            font-size: 36px;
+            font-size: 42px;
             font-weight: 900;
-            text-shadow: 0 0 20px #ff0000;
+            text-shadow: 0 0 30px #ff0000;
             z-index: 200;
         }
         
@@ -89,57 +161,25 @@
         }
         
         @keyframes doomGlow {
-            from { text-shadow: 0 0 20px #ff0000; }
-            to { text-shadow: 0 0 40px #ff0000, 0 0 60px #ff0000; }
+            from { 
+                text-shadow: 0 0 30px #ff0000;
+                color: #ff0000;
+            }
+            to { 
+                text-shadow: 0 0 60px #ff0000, 0 0 90px #ff0000;
+                color: #ff6666;
+            }
         }
         
-        #minimap {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 120px;
-            height: 120px;
-            background: rgba(0,0,0,0.8);
-            border: 2px solid #ff0000;
-            border-radius: 5px;
-            z-index: 100;
-        }
-        
-        .hud-element {
-            position: absolute;
-            color: #ff0000;
-            font-weight: bold;
-            text-shadow: 0 0 5px #ff0000;
-            z-index: 100;
-        }
-        
-        #healthBar {
-            position: absolute;
-            bottom: 60px;
-            left: 20px;
-            width: 200px;
-            height: 20px;
-            background: rgba(0,0,0,0.7);
-            border: 1px solid #ff0000;
-            border-radius: 10px;
-        }
-        
-        #healthFill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff0000, #ff6666);
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-        
-        .damage-flash {
+        .damage-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255,0,0,0.3);
-            z-index: 75;
-            animation: damageFlash 0.2s ease-out;
+            background: radial-gradient(circle, rgba(255,0,0,0.4), rgba(255,0,0,0.1));
+            z-index: 50;
+            animation: damageFlash 0.3s ease-out;
         }
         
         @keyframes damageFlash {
@@ -149,49 +189,93 @@
         
         .muzzle-flash {
             position: absolute;
-            top: 45%;
+            top: 55%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: radial-gradient(circle, #ffff00, rgba(255,255,0,0.3), transparent);
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, #ffff00, rgba(255,255,0,0.6), transparent);
             border-radius: 50%;
             z-index: 90;
-            animation: muzzleFlash 0.08s ease-out;
+            animation: muzzleFlash 0.1s ease-out;
         }
         
         @keyframes muzzleFlash {
-            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
-        }
-        
-        #ammoCounter {
-            position: absolute;
-            bottom: 20px;
-            left: 250px;
-            color: #00ff00;
-            font-weight: bold;
-            font-size: 18px;
-            text-shadow: 0 0 10px #00ff00;
-            z-index: 100;
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(0.8); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
         }
         
         .reload-indicator {
             position: absolute;
-            top: 45%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: #ffff00;
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
-            text-shadow: 0 0 15px #ffff00;
+            text-shadow: 0 0 20px #ffff00;
             z-index: 100;
-            animation: reloadPulse 1s ease-in-out infinite;
+            animation: reloadPulse 0.8s ease-in-out infinite;
         }
         
         @keyframes reloadPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+        }
+        
+        .weapon-display {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 100px;
+            background: rgba(0,0,0,0.7);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .weapon-sprite {
+            color: #ff0000;
+            font-size: 60px;
+            text-shadow: 0 0 20px #ff0000;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 10px #ffff00;
+            z-index: 100;
+        }
+        
+        .level-complete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            padding: 40px;
+            border-radius: 20px;
+            border: 4px solid #ffd700;
+            color: #ffd700;
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 250;
+            animation: levelComplete 0.5s ease-out;
+        }
+        
+        @keyframes levelComplete {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -203,226 +287,306 @@
         <div id="crosshair"></div>
         
         <div id="ui">
-            <div>❤️ <span id="health">100</span></div>
-            <div>🛡️ <span id="armor">50</span></div>
-            <div>💀 <span id="kills">0</span></div>
-            <div>🎯 <span id="level">1</span></div>
+            <div>❤️ Здоровье: <span id="health">100</span></div>
+            <div>🛡️ Броня: <span id="armor">100</span></div>
+            <div>🔫 Патроны: <span id="ammo">30</span> / <span id="totalAmmo">150</span></div>
+            <div>💀 Убийств: <span id="kills">0</span></div>
         </div>
         
-        <div id="ammoCounter">
-            <div>🔫 <span id="ammo">30</span> / <span id="totalAmmo">120</span></div>
+        <div id="weaponHUD">
+            <div>🔫 Оружие: <span id="weaponName">Assault Rifle</span></div>
+            <div>💥 Урон: <span id="weaponDamage">35</span></div>
+            <div>🎯 Точность: <span id="weaponAccuracy">85%</span></div>
         </div>
         
-        <div id="weaponInfo">
-            <div>Weapon: <span id="currentWeapon">Shotgun</span></div>
-            <div>Damage: <span id="weaponDamage">80</span></div>
+        <div id="score-display" class="score-display">
+            <div>🏆 Счет: <span id="score">0</span></div>
+            <div>📊 Уровень: <span id="level">1</span></div>
         </div>
         
         <div id="healthBar">
             <div id="healthFill" style="width: 100%"></div>
         </div>
         
+        <div id="ammoBar">
+            <div id="ammoFill" style="width: 100%"></div>
+        </div>
+        
+        <div class="weapon-display">
+            <div class="weapon-sprite" id="weaponSprite">🔫</div>
+        </div>
+        
         <div id="startScreen">
-            <div class="glow">💀 ADVANCED DOOM 💀</div>
-            <div style="font-size: 20px; margin-top: 25px;">
-                🎮 WASD - Movement<br>
-                🖱️ Mouse - Look around<br>
-                🔫 Click - Shoot<br>
-                🔄 R - Reload<br>
-                🔢 1-4 - Change weapon<br>
-                🏃 Shift - Run<br><br>
-                <span style="color: #ffff00; font-size: 22px;">🔥 Click to enter HELL!</span>
+            <div class="glow">💀 ULTIMATE DOOM 3D 💀</div>
+            <div style="font-size: 22px; margin-top: 30px;">
+                🎮 <strong>Управление:</strong><br>
+                WASD - Движение<br>
+                Мышь - Обзор (ИСПРАВЛЕНО!)<br>
+                ЛКМ - Стрельба<br>
+                ПКМ - Прицеливание<br>
+                R - Перезарядка<br>
+                1-4 - Смена оружия<br>
+                Shift - Бег<br>
+                Space - Прыжок<br><br>
+                <span style="color: #ffff00; font-size: 26px;">🔥 Кликните для входа в АД!</span>
             </div>
         </div>
     </div>
 
     <script>
-        // Настройка canvas
+        // Настройка canvas с оптимизацией
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const minimap = document.getElementById('minimap');
         const minimapCtx = minimap.getContext('2d');
         
-        // Оптимизированные размеры
-        const RENDER_WIDTH = 800;
-        const RENDER_HEIGHT = 600;
+        // Высокое разрешение для качественной графики
+        const RENDER_WIDTH = 1200;
+        const RENDER_HEIGHT = 800;
         
         canvas.width = RENDER_WIDTH;
         canvas.height = RENDER_HEIGHT;
         canvas.style.width = '100vw';
         canvas.style.height = '100vh';
         
-        minimap.width = 120;
-        minimap.height = 120;
+        minimap.width = 150;
+        minimap.height = 150;
         
-        // Игровое состояние
+        // Состояние игры
         let gameState = {
             running: false,
             health: 100,
-            armor: 50,
-            ammo: 8,
-            totalAmmo: 32,
+            armor: 100,
+            ammo: 30,
+            totalAmmo: 150,
             kills: 0,
+            score: 0,
             level: 1,
             currentWeapon: 0,
             isReloading: false,
             reloadProgress: 0,
-            score: 0,
-            time: 0,
-            lastShot: 0,
-            difficulty: 1
+            isPaused: false,
+            time: 0
         };
         
         // Продвинутая система оружия
         const weapons = [
-            { 
-                name: 'Shotgun', 
-                damage: 80, 
-                ammo: 8, 
-                maxAmmo: 8, 
-                fireRate: 600, 
-                reloadTime: 120, 
-                range: 400,
-                spread: 0.3,
-                pellets: 8,
-                sound: 'shotgun',
-                kickback: 15
-            },
-            { 
-                name: 'Assault Rifle', 
-                damage: 35, 
-                ammo: 30, 
-                maxAmmo: 30, 
-                fireRate: 100, 
-                reloadTime: 90, 
+            {
+                name: 'Assault Rifle',
+                sprite: '🔫',
+                damage: 35,
+                ammo: 30,
+                maxAmmo: 30,
+                fireRate: 120,
+                reloadTime: 150,
                 range: 800,
-                spread: 0.1,
+                accuracy: 85,
+                spread: 0.08,
                 pellets: 1,
                 sound: 'rifle',
-                kickback: 5
+                kickback: 8
             },
-            { 
-                name: 'Pistol', 
-                damage: 25, 
-                ammo: 12, 
-                maxAmmo: 12, 
-                fireRate: 300, 
-                reloadTime: 60, 
-                range: 600,
-                spread: 0.05,
-                pellets: 1,
-                sound: 'pistol',
-                kickback: 3
+            {
+                name: 'Shotgun',
+                sprite: '🔫',
+                damage: 25,
+                ammo: 8,
+                maxAmmo: 8,
+                fireRate: 600,
+                reloadTime: 180,
+                range: 400,
+                accuracy: 60,
+                spread: 0.25,
+                pellets: 8,
+                sound: 'shotgun',
+                kickback: 18
             },
-            { 
-                name: 'Rocket Launcher', 
-                damage: 200, 
-                ammo: 5, 
-                maxAmmo: 5, 
-                fireRate: 1000, 
-                reloadTime: 180, 
+            {
+                name: 'Sniper Rifle',
+                sprite: '🎯',
+                damage: 120,
+                ammo: 5,
+                maxAmmo: 5,
+                fireRate: 1200,
+                reloadTime: 200,
                 range: 1200,
+                accuracy: 95,
+                spread: 0.02,
+                pellets: 1,
+                sound: 'sniper',
+                kickback: 25
+            },
+            {
+                name: 'Rocket Launcher',
+                sprite: '🚀',
+                damage: 200,
+                ammo: 3,
+                maxAmmo: 3,
+                fireRate: 1500,
+                reloadTime: 250,
+                range: 1000,
+                accuracy: 100,
                 spread: 0,
                 pellets: 1,
                 sound: 'rocket',
-                kickback: 25,
+                kickback: 35,
                 explosive: true
             }
         ];
         
         // Игрок с улучшенной физикой
         let player = {
-            x: 200,
-            y: 200,
-            z: 0,
+            x: 300,
+            y: 300,
+            z: 32,
             angle: 0,
             pitch: 0,
-            speed: 4,
-            runSpeed: 7,
+            speed: 5,
+            runSpeed: 8,
+            jumpSpeed: 12,
             health: 100,
-            armor: 50,
+            armor: 100,
             maxHealth: 100,
             maxArmor: 100,
-            fov: Math.PI / 2.5,
+            fov: Math.PI / 2.2,
             viewHeight: 32,
             bobPhase: 0,
             kickback: 0,
-            kickbackDecay: 0.9,
-            isRunning: false,
+            kickbackAngle: 0,
+            isJumping: false,
+            jumpVelocity: 0,
             stamina: 100,
-            maxStamina: 100
+            maxStamina: 100,
+            isAiming: false,
+            mouseSensitivity: 0.003,
+            verticalSensitivity: 0.002
         };
         
-        // Оптимизированная карта
+        // 3D карта мира
         const CELL_SIZE = 64;
-        const MAP_WIDTH = 24;
-        const MAP_HEIGHT = 24;
+        const MAP_WIDTH = 32;
+        const MAP_HEIGHT = 32;
         
+        // Более детализированная карта
         const worldMap = [
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,1],
-            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,2,2,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,0,2,0,0,0,0,0,2,0,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,2,2,2,0,0,0,0,0,2,2,2,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,1],
-            [1,0,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,4,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,3,0,0,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,3,3,3,3,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,1],
+            [1,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,1],
+            [1,0,2,2,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,2,2,0,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
         ];
         
-        // Система врагов с улучшенным ИИ
+        // Система врагов
         let enemies = [];
         let projectiles = [];
         let particles = [];
+        let powerups = [];
         
+        // Улучшенный класс врага
         class Enemy {
             constructor(x, y, type = 'demon') {
                 this.x = x;
                 this.y = y;
-                this.z = 0;
+                this.z = 32;
                 this.type = type;
-                this.health = 100;
-                this.maxHealth = 100;
-                this.speed = 2;
-                this.damage = 25;
+                this.health = this.getHealthByType(type);
+                this.maxHealth = this.health;
+                this.speed = this.getSpeedByType(type);
+                this.damage = this.getDamageByType(type);
                 this.angle = Math.random() * Math.PI * 2;
                 this.state = 'patrol';
                 this.lastAttack = 0;
-                this.attackCooldown = 1000;
-                this.sightRange = 400;
-                this.attackRange = 60;
-                this.size = 24;
-                this.color = type === 'demon' ? '#ff3333' : '#3333ff';
+                this.attackCooldown = 800;
+                this.sightRange = 500;
+                this.attackRange = 80;
+                this.size = 28;
+                this.color = this.getColorByType(type);
                 this.animPhase = Math.random() * Math.PI * 2;
                 this.pathTarget = { x: x, y: y };
                 this.stunned = false;
                 this.stunTime = 0;
                 this.lastSeen = { x: player.x, y: player.y };
                 this.alertLevel = 0;
-                this.movePattern = 'direct';
                 this.dodgeDirection = 0;
                 this.dodgeTime = 0;
+                this.fireRate = 1000;
+                this.lastShot = 0;
+                this.accuracy = 0.7;
+                this.jumpCooldown = 0;
+                this.canJump = type === 'imp';
+            }
+            
+            getHealthByType(type) {
+                switch(type) {
+                    case 'demon': return 120;
+                    case 'imp': return 80;
+                    case 'baron': return 200;
+                    case 'cyberdemon': return 400;
+                    default: return 100;
+                }
+            }
+            
+            getSpeedByType(type) {
+                switch(type) {
+                    case 'demon': return 2.5;
+                    case 'imp': return 3.5;
+                    case 'baron': return 1.8;
+                    case 'cyberdemon': return 1.2;
+                    default: return 2;
+                }
+            }
+            
+            getDamageByType(type) {
+                switch(type) {
+                    case 'demon': return 25;
+                    case 'imp': return 20;
+                    case 'baron': return 40;
+                    case 'cyberdemon': return 60;
+                    default: return 25;
+                }
+            }
+            
+            getColorByType(type) {
+                switch(type) {
+                    case 'demon': return '#ff3333';
+                    case 'imp': return '#ff6600';
+                    case 'baron': return '#cc0000';
+                    case 'cyberdemon': return '#666666';
+                    default: return '#ff3333';
+                }
             }
             
             update() {
-                this.animPhase += 0.15;
+                this.animPhase += 0.12;
                 
-                // Обновление состояния оглушения
                 if (this.stunned) {
                     this.stunTime--;
                     if (this.stunTime <= 0) {
@@ -431,22 +595,18 @@
                     return;
                 }
                 
+                if (this.jumpCooldown > 0) this.jumpCooldown--;
+                
                 const dx = player.x - this.x;
                 const dy = player.y - this.y;
                 const distToPlayer = Math.sqrt(dx * dx + dy * dy);
                 
-                // Система состояний ИИ
                 this.updateAI(distToPlayer, dx, dy);
-                
-                // Обновление позиции
                 this.move();
-                
-                // Проверка границ карты
                 this.checkBounds();
             }
             
             updateAI(distToPlayer, dx, dy) {
-                // Линия обзора
                 const hasLineOfSight = this.checkLineOfSight(player.x, player.y);
                 
                 if (hasLineOfSight && distToPlayer < this.sightRange) {
@@ -460,10 +620,20 @@
                         this.state = 'chase';
                         this.angle = Math.atan2(dy, dx);
                         
-                        // Уклонение от выстрелов
+                        // Стрельба для некоторых типов врагов
+                        if ((this.type === 'imp' || this.type === 'cyberdemon') && this.canShoot()) {
+                            this.shootAtPlayer();
+                        }
+                        
+                        // Уклонение
                         if (this.dodgeTime > 0) {
                             this.dodgeTime--;
                             this.angle += this.dodgeDirection;
+                        }
+                        
+                        // Прыжок для импов
+                        if (this.canJump && this.jumpCooldown <= 0 && Math.random() < 0.02) {
+                            this.jump();
                         }
                     }
                 } else if (this.alertLevel > 0) {
@@ -474,6 +644,49 @@
                     this.state = 'patrol';
                     this.patrol();
                 }
+            }
+            
+            canShoot() {
+                return Date.now() - this.lastShot > this.fireRate;
+            }
+            
+            shootAtPlayer() {
+                if (!this.canShoot()) return;
+                
+                this.lastShot = Date.now();
+                
+                const dx = player.x - this.x;
+                const dy = player.y - this.y;
+                const angle = Math.atan2(dy, dx);
+                
+                // Учет неточности
+                const spread = (1 - this.accuracy) * 0.3;
+                const finalAngle = angle + (Math.random() - 0.5) * spread;
+                
+                // Создание снаряда врага
+                projectiles.push({
+                    x: this.x,
+                    y: this.y,
+                    z: this.z,
+                    angle: finalAngle,
+                    speed: 6,
+                    damage: this.damage * 0.7,
+                    owner: 'enemy',
+                    life: 120,
+                    size: 4,
+                    color: this.type === 'cyberdemon' ? '#ff6600' : '#ff0000'
+                });
+                
+                createParticles(this.x, this.y, this.z, '#ff6600', 6);
+            }
+            
+            jump() {
+                this.jumpCooldown = 180;
+                this.z += 20;
+                
+                setTimeout(() => {
+                    this.z = 32;
+                }, 500);
             }
             
             checkLineOfSight(targetX, targetY) {
@@ -509,8 +722,7 @@
                         this.x = newX;
                         this.y = newY;
                     } else {
-                        // Изменение направления при столкновении
-                        this.angle += Math.PI / 4;
+                        this.angle += Math.PI / 3;
                     }
                 }
             }
@@ -529,7 +741,7 @@
                 const dy = targetY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance > 20) {
+                if (distance > 30) {
                     this.angle = Math.atan2(dy, dx);
                 }
             }
@@ -539,9 +751,9 @@
                 const dy = this.pathTarget.y - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < 30) {
-                    this.pathTarget.x = this.x + (Math.random() - 0.5) * 200;
-                    this.pathTarget.y = this.y + (Math.random() - 0.5) * 200;
+                if (distance < 40) {
+                    this.pathTarget.x = this.x + (Math.random() - 0.5) * 300;
+                    this.pathTarget.y = this.y + (Math.random() - 0.5) * 300;
                 } else {
                     this.moveToward(this.pathTarget.x, this.pathTarget.y);
                 }
@@ -552,11 +764,10 @@
                 if (now - this.lastAttack > this.attackCooldown) {
                     this.lastAttack = now;
                     
-                    // Нанесение урона игроку
                     const damage = Math.floor(this.damage * (0.8 + Math.random() * 0.4));
                     
                     if (player.armor > 0) {
-                        const armorAbsorbed = Math.min(player.armor, damage * 0.5);
+                        const armorAbsorbed = Math.min(player.armor, damage * 0.6);
                         player.armor -= armorAbsorbed;
                         player.health -= (damage - armorAbsorbed);
                     } else {
@@ -564,7 +775,7 @@
                     }
                     
                     createDamageFlash();
-                    createParticles(this.x, this.y, '#ff0000', 8);
+                    createParticles(this.x, this.y, this.z, '#ff0000', 10);
                     playSound('enemy_attack');
                     
                     if (player.health <= 0) {
@@ -578,15 +789,13 @@
                 this.alertLevel = 10;
                 this.lastSeen = { x: fromX, y: fromY };
                 
-                // Эффект оглушения
                 this.stunned = true;
-                this.stunTime = 15;
+                this.stunTime = 20;
                 
-                // Уклонение в сторону
                 this.dodgeDirection = (Math.random() - 0.5) * 2;
-                this.dodgeTime = 30;
+                this.dodgeTime = 40;
                 
-                createParticles(this.x, this.y, '#ff0000', 12);
+                createParticles(this.x, this.y, this.z, '#ff0000', 15);
                 
                 if (this.health <= 0) {
                     this.die();
@@ -595,33 +804,43 @@
             
             die() {
                 gameState.kills++;
-                gameState.score += 100;
+                gameState.score += this.getScoreByType();
                 
-                // Удаление из массива
                 const index = enemies.indexOf(this);
                 if (index > -1) {
                     enemies.splice(index, 1);
                 }
                 
-                // Эффект смерти
-                createExplosion(this.x, this.y, 15);
+                createExplosion(this.x, this.y, this.z, 20);
                 playSound('enemy_death');
                 
-                // Шанс выпадения предметов
-                if (Math.random() < 0.4) {
-                    const itemType = Math.random();
-                    if (itemType < 0.3) {
-                        gameState.totalAmmo += 8;
-                    } else if (itemType < 0.6) {
-                        player.health = Math.min(player.maxHealth, player.health + 25);
-                    } else {
-                        player.armor = Math.min(player.maxArmor, player.armor + 20);
-                    }
+                // Дропы
+                this.dropItems();
+            }
+            
+            getScoreByType() {
+                switch(this.type) {
+                    case 'demon': return 100;
+                    case 'imp': return 80;
+                    case 'baron': return 200;
+                    case 'cyberdemon': return 500;
+                    default: return 100;
+                }
+            }
+            
+            dropItems() {
+                const dropChance = Math.random();
+                if (dropChance < 0.3) {
+                    gameState.totalAmmo += 15;
+                } else if (dropChance < 0.5) {
+                    player.health = Math.min(player.maxHealth, player.health + 20);
+                } else if (dropChance < 0.65) {
+                    player.armor = Math.min(player.maxArmor, player.armor + 25);
                 }
             }
             
             checkBounds() {
-                const margin = 32;
+                const margin = 40;
                 if (this.x < margin) this.x = margin;
                 if (this.x > MAP_WIDTH * CELL_SIZE - margin) this.x = MAP_WIDTH * CELL_SIZE - margin;
                 if (this.y < margin) this.y = margin;
@@ -629,13 +848,13 @@
             }
         }
         
-        // Система рейкастинга с оптимизацией
-        function castRay(x, y, angle, maxDist = 1000) {
+        // Улучшенная система рейкастинга
+        function castRay(x, y, angle, maxDist = 1200) {
             const dx = Math.cos(angle);
             const dy = Math.sin(angle);
             
             let distance = 0;
-            const step = 8;
+            const step = 4;
             
             while (distance < maxDist) {
                 const testX = x + dx * distance;
@@ -657,7 +876,8 @@
                         mapX: mapX,
                         mapY: mapY,
                         wallType: cell,
-                        hitSide: getHitSide(testX, testY, mapX, mapY)
+                        hitSide: getHitSide(testX, testY, mapX, mapY),
+                        textureX: getTextureX(testX, testY, mapX, mapY)
                     };
                 }
                 
@@ -677,9 +897,16 @@
             return 'south';
         }
         
-        // Улучшенный 3D рендеринг
+        function getTextureX(x, y, mapX, mapY) {
+            const cellX = x - mapX * CELL_SIZE;
+            const cellY = y - mapY * CELL_SIZE;
+            
+            return (cellX + cellY) % CELL_SIZE;
+        }
+        
+        // Качественный 3D рендеринг
         function render3D() {
-            // Очистка экрана
+            // Очистка с градиентом
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
             
@@ -697,21 +924,31 @@
         }
         
         function renderSkyAndFloor() {
-            const horizon = RENDER_HEIGHT / 2 + player.pitch * 200;
+            const horizon = RENDER_HEIGHT / 2 + player.pitch * 300;
             
-            // Небо
+            // Детализированное небо
             const skyGradient = ctx.createLinearGradient(0, 0, 0, horizon);
-            skyGradient.addColorStop(0, '#330000');
-            skyGradient.addColorStop(1, '#660000');
+            skyGradient.addColorStop(0, '#4a0e0e');
+            skyGradient.addColorStop(0.5, '#660000');
+            skyGradient.addColorStop(1, '#330000');
             ctx.fillStyle = skyGradient;
             ctx.fillRect(0, 0, RENDER_WIDTH, horizon);
             
-            // Пол
+            // Детализированный пол
             const floorGradient = ctx.createLinearGradient(0, horizon, 0, RENDER_HEIGHT);
-            floorGradient.addColorStop(0, '#222222');
-            floorGradient.addColorStop(1, '#111111');
+            floorGradient.addColorStop(0, '#2a2a2a');
+            floorGradient.addColorStop(0.5, '#1a1a1a');
+            floorGradient.addColorStop(1, '#0a0a0a');
             ctx.fillStyle = floorGradient;
             ctx.fillRect(0, horizon, RENDER_WIDTH, RENDER_HEIGHT - horizon);
+            
+            // Эффект тумана для пола
+            for (let i = 0; i < 5; i++) {
+                const fogY = horizon + (RENDER_HEIGHT - horizon) * (i / 5);
+                const fogAlpha = 0.05 + (i / 5) * 0.1;
+                ctx.fillStyle = `rgba(100, 0, 0, ${fogAlpha})`;
+                ctx.fillRect(0, fogY, RENDER_WIDTH, (RENDER_HEIGHT - horizon) / 5);
+            }
         }
         
         function renderWalls() {
@@ -722,57 +959,73 @@
                 const rayAngle = player.angle - player.fov / 2 + i * rayAngleStep;
                 const hit = castRay(player.x, player.y, rayAngle);
                 
-                if (hit.distance < 1000) {
+                if (hit.distance < 1200) {
                     const correctedDistance = hit.distance * Math.cos(rayAngle - player.angle);
                     const wallHeight = (RENDER_HEIGHT * CELL_SIZE) / correctedDistance;
                     
-                    // Определение цвета стены
-                    let wallColor = getWallColor(hit.wallType, hit.hitSide, correctedDistance);
+                    let wallColor = getWallColor(hit.wallType, hit.hitSide, correctedDistance, hit.textureX);
+                    
+                    const wallTop = RENDER_HEIGHT / 2 - wallHeight / 2 + player.pitch * 300;
                     
                     // Рендеринг колонны стены
                     ctx.fillStyle = wallColor;
-                    const wallTop = RENDER_HEIGHT / 2 - wallHeight / 2 + player.pitch * 200;
                     ctx.fillRect(i * 2, wallTop, 2, wallHeight);
                     
-                    // Добавление теней
+                    // Добавление теней и деталей
                     if (hit.hitSide === 'east' || hit.hitSide === 'west') {
-                        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+                        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                        ctx.fillRect(i * 2, wallTop, 2, wallHeight);
+                    }
+                    
+                    // Эффект тумана для дальних стен
+                    if (correctedDistance > 600) {
+                        const fogAlpha = (correctedDistance - 600) / 600 * 0.8;
+                        ctx.fillStyle = `rgba(0,0,0,${fogAlpha})`;
                         ctx.fillRect(i * 2, wallTop, 2, wallHeight);
                     }
                 }
             }
         }
         
-        function getWallColor(wallType, hitSide, distance) {
+        function getWallColor(wallType, hitSide, distance, textureX) {
             let baseColor;
             
             switch (wallType) {
                 case 1:
-                    baseColor = [100, 100, 100];
+                    baseColor = [120, 120, 120];
                     break;
                 case 2:
-                    baseColor = [150, 75, 50];
+                    baseColor = [150, 100, 70];
+                    break;
+                case 3:
+                    baseColor = [100, 150, 100];
+                    break;
+                case 4:
+                    baseColor = [150, 150, 100];
                     break;
                 default:
-                    baseColor = [80, 80, 80];
+                    baseColor = [100, 100, 100];
             }
             
-            // Затемнение в зависимости от расстояния
-            const lightLevel = Math.max(0.2, 1 - distance / 800);
+            // Освещение
+            const lightLevel = Math.max(0.3, 1 - distance / 1000);
             
-            // Модификация цвета в зависимости от стороны
+            // Модификация по стороне
             if (hitSide === 'north' || hitSide === 'south') {
                 baseColor = baseColor.map(c => Math.floor(c * 0.8));
             }
             
-            // Применение освещения
-            baseColor = baseColor.map(c => Math.floor(c * lightLevel));
+            // Текстурирование
+            const texturePattern = Math.sin(textureX * 0.1) * 0.1 + 1;
+            
+            // Применение эффектов
+            baseColor = baseColor.map(c => Math.floor(c * lightLevel * texturePattern));
             
             return `rgb(${baseColor[0]}, ${baseColor[1]}, ${baseColor[2]})`;
         }
         
         function renderSprites() {
-            // Сортировка спрайтов по расстоянию
+            // Сбор всех спрайтов
             const sprites = [];
             
             enemies.forEach(enemy => {
@@ -789,6 +1042,14 @@
                 sprites.push({ type: 'projectile', obj: proj, distance: distance });
             });
             
+            powerups.forEach(powerup => {
+                const dx = powerup.x - player.x;
+                const dy = powerup.y - player.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                sprites.push({ type: 'powerup', obj: powerup, distance: distance });
+            });
+            
+            // Сортировка по расстоянию
             sprites.sort((a, b) => b.distance - a.distance);
             
             // Рендеринг спрайтов
@@ -797,6 +1058,8 @@
                     renderEnemy(sprite.obj);
                 } else if (sprite.type === 'projectile') {
                     renderProjectile(sprite.obj);
+                } else if (sprite.type === 'powerup') {
+                    renderPowerup(sprite.obj);
                 }
             });
         }
@@ -806,53 +1069,81 @@
             const dy = enemy.y - player.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < 600) {
+            if (distance < 800) {
                 const angle = Math.atan2(dy, dx);
                 const relativeAngle = angle - player.angle;
                 
-                // Нормализация угла
                 let normalizedAngle = relativeAngle;
                 while (normalizedAngle > Math.PI) normalizedAngle -= 2 * Math.PI;
                 while (normalizedAngle < -Math.PI) normalizedAngle += 2 * Math.PI;
                 
                 if (Math.abs(normalizedAngle) < player.fov / 2 + 0.5) {
                     const screenX = RENDER_WIDTH / 2 + Math.tan(normalizedAngle) * (RENDER_WIDTH / 2) / Math.tan(player.fov / 2);
-                    const spriteSize = (enemy.size / distance) * 400;
+                    const spriteSize = (enemy.size / distance) * 600;
+                    const spriteHeight = spriteSize * 1.5;
                     
                     if (screenX > -spriteSize && screenX < RENDER_WIDTH + spriteSize) {
                         ctx.save();
-                        ctx.translate(screenX, RENDER_HEIGHT / 2 + player.pitch * 200);
+                        ctx.translate(screenX, RENDER_HEIGHT / 2 + player.pitch * 300);
                         
-                        // Определение цвета врага
+                        // Определение цвета с учетом здоровья
                         const healthPercent = enemy.health / enemy.maxHealth;
-                        const red = Math.floor(255 * (1 - healthPercent * 0.3));
-                        const green = Math.floor(100 * healthPercent);
+                        const red = Math.floor(255 * (1 - healthPercent * 0.2));
+                        const green = Math.floor(150 * healthPercent);
+                        const blue = Math.floor(50 * healthPercent);
                         
-                        // Тело врага
-                        ctx.fillStyle = `rgb(${red}, ${green}, 0)`;
-                        ctx.fillRect(-spriteSize / 2, -spriteSize / 2, spriteSize, spriteSize);
+                        // Затемнение по расстоянию
+                        const lightLevel = Math.max(0.3, 1 - distance / 800);
+                        const finalRed = Math.floor(red * lightLevel);
+                        const finalGreen = Math.floor(green * lightLevel);
+                        const finalBlue = Math.floor(blue * lightLevel);
                         
                         // Анимация
-                        const bounce = Math.sin(enemy.animPhase) * 2;
+                        const bounce = Math.sin(enemy.animPhase) * 3;
                         ctx.translate(0, bounce);
+                        
+                        // Тень
+                        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                        ctx.beginPath();
+                        ctx.ellipse(0, spriteHeight / 2 + 10, spriteSize * 0.8, spriteSize * 0.3, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Основное тело
+                        ctx.fillStyle = `rgb(${finalRed}, ${finalGreen}, ${finalBlue})`;
+                        ctx.shadowColor = enemy.color;
+                        ctx.shadowBlur = 8;
+                        ctx.fillRect(-spriteSize / 2, -spriteHeight / 2, spriteSize, spriteHeight);
+                        
+                        // Детали в зависимости от типа
+                        if (enemy.type === 'demon') {
+                            // Рога
+                            ctx.fillStyle = '#444';
+                            ctx.fillRect(-spriteSize / 3, -spriteHeight / 2 - 8, spriteSize / 6, 15);
+                            ctx.fillRect(spriteSize / 6, -spriteHeight / 2 - 8, spriteSize / 6, 15);
+                        } else if (enemy.type === 'imp') {
+                            // Крылья
+                            ctx.fillStyle = `rgb(${finalRed * 0.7}, ${finalGreen * 0.7}, ${finalBlue * 0.7})`;
+                            ctx.fillRect(-spriteSize, -spriteHeight / 3, spriteSize / 3, spriteHeight / 2);
+                            ctx.fillRect(spriteSize * 2/3, -spriteHeight / 3, spriteSize / 3, spriteHeight / 2);
+                        }
                         
                         // Глаза
                         ctx.fillStyle = '#ffff00';
-                        ctx.fillRect(-spriteSize / 4, -spriteSize / 3, spriteSize / 8, spriteSize / 8);
-                        ctx.fillRect(spriteSize / 8, -spriteSize / 3, spriteSize / 8, spriteSize / 8);
+                        ctx.fillRect(-spriteSize / 4, -spriteHeight / 4, spriteSize / 8, spriteSize / 8);
+                        ctx.fillRect(spriteSize / 8, -spriteHeight / 4, spriteSize / 8, spriteSize / 8);
                         
-                        // Полоска здоровья
+                        // Полоса здоровья
                         if (enemy.health < enemy.maxHealth) {
                             ctx.fillStyle = '#ff0000';
-                            ctx.fillRect(-spriteSize / 2, -spriteSize / 2 - 8, spriteSize, 4);
+                            ctx.fillRect(-spriteSize / 2, -spriteHeight / 2 - 15, spriteSize, 6);
                             ctx.fillStyle = '#00ff00';
-                            ctx.fillRect(-spriteSize / 2, -spriteSize / 2 - 8, spriteSize * healthPercent, 4);
+                            ctx.fillRect(-spriteSize / 2, -spriteHeight / 2 - 15, spriteSize * healthPercent, 6);
                         }
                         
-                        // Эффект оглушения
+                        // Эффекты состояния
                         if (enemy.stunned) {
-                            ctx.fillStyle = 'rgba(255, 255, 0, 0.5)';
-                            ctx.fillRect(-spriteSize / 2, -spriteSize / 2, spriteSize, spriteSize);
+                            ctx.fillStyle = 'rgba(255, 255, 0, 0.6)';
+                            ctx.fillRect(-spriteSize / 2, -spriteHeight / 2, spriteSize, spriteHeight);
                         }
                         
                         ctx.restore();
@@ -866,7 +1157,7 @@
             const dy = proj.y - player.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
-            if (distance < 800) {
+            if (distance < 1000) {
                 const angle = Math.atan2(dy, dx);
                 const relativeAngle = angle - player.angle;
                 
@@ -874,19 +1165,58 @@
                 while (normalizedAngle > Math.PI) normalizedAngle -= 2 * Math.PI;
                 while (normalizedAngle < -Math.PI) normalizedAngle += 2 * Math.PI;
                 
-                if (Math.abs(normalizedAngle) < player.fov / 2 + 0.5) {
+                if (Math.abs(normalizedAngle) < player.fov / 2 + 0.3) {
                     const screenX = RENDER_WIDTH / 2 + Math.tan(normalizedAngle) * (RENDER_WIDTH / 2) / Math.tan(player.fov / 2);
-                    const projSize = (proj.size / distance) * 400;
+                    const projSize = (proj.size / distance) * 600;
                     
                     ctx.save();
-                    ctx.translate(screenX, RENDER_HEIGHT / 2 + player.pitch * 200);
+                    ctx.translate(screenX, RENDER_HEIGHT / 2 + player.pitch * 300);
                     
                     ctx.fillStyle = proj.color;
                     ctx.shadowColor = proj.color;
-                    ctx.shadowBlur = 10;
+                    ctx.shadowBlur = 15;
                     ctx.beginPath();
                     ctx.arc(0, 0, projSize, 0, Math.PI * 2);
                     ctx.fill();
+                    
+                    // Трейл для снарядов
+                    ctx.fillStyle = proj.color;
+                    ctx.globalAlpha = 0.5;
+                    ctx.beginPath();
+                    ctx.arc(-projSize, 0, projSize * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.restore();
+                }
+            }
+        }
+        
+        function renderPowerup(powerup) {
+            // Аналогично renderProjectile, но с анимацией вращения
+            const dx = powerup.x - player.x;
+            const dy = powerup.y - player.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < 600) {
+                const angle = Math.atan2(dy, dx);
+                const relativeAngle = angle - player.angle;
+                
+                let normalizedAngle = relativeAngle;
+                while (normalizedAngle > Math.PI) normalizedAngle -= 2 * Math.PI;
+                while (normalizedAngle < -Math.PI) normalizedAngle += 2 * Math.PI;
+                
+                if (Math.abs(normalizedAngle) < player.fov / 2 + 0.3) {
+                    const screenX = RENDER_WIDTH / 2 + Math.tan(normalizedAngle) * (RENDER_WIDTH / 2) / Math.tan(player.fov / 2);
+                    const powerupSize = (powerup.size / distance) * 600;
+                    
+                    ctx.save();
+                    ctx.translate(screenX, RENDER_HEIGHT / 2 + player.pitch * 300);
+                    ctx.rotate(powerup.rotation);
+                    
+                    ctx.fillStyle = powerup.color;
+                    ctx.shadowColor = powerup.color;
+                    ctx.shadowBlur = 20;
+                    ctx.fillRect(-powerupSize / 2, -powerupSize / 2, powerupSize, powerupSize);
                     
                     ctx.restore();
                 }
@@ -897,29 +1227,38 @@
             // Эффект отдачи
             if (player.kickback > 0) {
                 ctx.save();
-                ctx.globalAlpha = player.kickback / 20;
+                ctx.globalAlpha = player.kickback / 30;
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
                 ctx.restore();
                 
-                player.kickback *= player.kickbackDecay;
+                player.kickback *= 0.85;
                 if (player.kickback < 0.1) player.kickback = 0;
             }
             
             // Эффект низкого здоровья
-            if (player.health < 30) {
+            if (player.health < 25) {
                 ctx.save();
-                ctx.globalAlpha = (30 - player.health) / 30 * 0.3;
+                ctx.globalAlpha = Math.sin(gameState.time * 0.1) * 0.3;
                 ctx.fillStyle = '#ff0000';
                 ctx.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
                 ctx.restore();
             }
             
-            // Эффект усталости
-            if (player.stamina < 20) {
+            // Эффект прицеливания
+            if (player.isAiming) {
                 ctx.save();
-                ctx.globalAlpha = (20 - player.stamina) / 20 * 0.2;
-                ctx.fillStyle = '#000000';
+                ctx.globalAlpha = 0.1;
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
+                ctx.restore();
+            }
+            
+            // Эффект усталости
+            if (player.stamina < 30) {
+                ctx.save();
+                ctx.globalAlpha = (30 - player.stamina) / 30 * 0.3;
+                ctx.fillStyle = '#333333';
                 ctx.fillRect(0, 0, RENDER_WIDTH, RENDER_HEIGHT);
                 ctx.restore();
             }
@@ -927,24 +1266,36 @@
         
         // Система частиц
         class Particle {
-            constructor(x, y, vx, vy, color, life, size = 2) {
+            constructor(x, y, z, vx, vy, vz, color, life, size = 3) {
                 this.x = x;
                 this.y = y;
+                this.z = z;
                 this.vx = vx;
                 this.vy = vy;
+                this.vz = vz;
                 this.color = color;
                 this.life = life;
                 this.maxLife = life;
                 this.size = size;
-                this.gravity = 0.1;
+                this.gravity = 0.2;
+                this.bounce = 0.3;
             }
             
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += this.gravity;
+                this.z += this.vz;
+                
+                this.vz += this.gravity;
                 this.vx *= 0.98;
                 this.vy *= 0.98;
+                
+                // Отскок от пола
+                if (this.z >= 32) {
+                    this.z = 32;
+                    this.vz *= -this.bounce;
+                }
+                
                 this.life--;
                 this.size *= 0.99;
             }
@@ -954,7 +1305,7 @@
                 const dy = this.y - player.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                if (distance < 400) {
+                if (distance < 500) {
                     const angle = Math.atan2(dy, dx);
                     const relativeAngle = angle - player.angle;
                     
@@ -964,15 +1315,16 @@
                     
                     if (Math.abs(normalizedAngle) < player.fov / 2 + 0.3) {
                         const screenX = RENDER_WIDTH / 2 + Math.tan(normalizedAngle) * (RENDER_WIDTH / 2) / Math.tan(player.fov / 2);
-                        const particleSize = (this.size / distance) * 200;
+                        const screenY = RENDER_HEIGHT / 2 + player.pitch * 300 - (this.z - 32) * 2;
+                        const particleSize = (this.size / distance) * 300;
                         
                         ctx.save();
                         ctx.globalAlpha = this.life / this.maxLife;
                         ctx.fillStyle = this.color;
                         ctx.shadowColor = this.color;
-                        ctx.shadowBlur = 5;
+                        ctx.shadowBlur = 8;
                         ctx.beginPath();
-                        ctx.arc(screenX, RENDER_HEIGHT / 2 + player.pitch * 200, particleSize, 0, Math.PI * 2);
+                        ctx.arc(screenX, screenY, particleSize, 0, Math.PI * 2);
                         ctx.fill();
                         ctx.restore();
                     }
@@ -980,28 +1332,30 @@
             }
         }
         
-        function createParticles(x, y, color, count) {
+        function createParticles(x, y, z, color, count) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 4 + 2;
+                const speed = Math.random() * 6 + 2;
                 const vx = Math.cos(angle) * speed;
                 const vy = Math.sin(angle) * speed;
+                const vz = Math.random() * 4 - 2;
                 
-                particles.push(new Particle(x, y, vx, vy, color, 30 + Math.random() * 20));
+                particles.push(new Particle(x, y, z, vx, vy, vz, color, 40 + Math.random() * 30));
             }
         }
         
-        function createExplosion(x, y, count) {
+        function createExplosion(x, y, z, count) {
             for (let i = 0; i < count; i++) {
                 const angle = Math.random() * Math.PI * 2;
-                const speed = Math.random() * 6 + 3;
+                const speed = Math.random() * 8 + 4;
                 const vx = Math.cos(angle) * speed;
                 const vy = Math.sin(angle) * speed;
+                const vz = Math.random() * 6 - 3;
                 
-                const colors = ['#ff0000', '#ff6600', '#ffff00', '#ff3300'];
+                const colors = ['#ff0000', '#ff6600', '#ffff00', '#ff3300', '#ff9900'];
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 
-                particles.push(new Particle(x, y, vx, vy, color, 40 + Math.random() * 30, 3 + Math.random() * 3));
+                particles.push(new Particle(x, y, z, vx, vy, vz, color, 50 + Math.random() * 40, 4 + Math.random() * 4));
             }
         }
         
@@ -1025,11 +1379,13 @@
             // Эффекты выстрела
             createMuzzleFlash();
             player.kickback = weapon.kickback;
+            player.kickbackAngle = (Math.random() - 0.5) * 0.1;
             playSound(weapon.sound);
             
             // Стрельба пеллетами
             for (let i = 0; i < weapon.pellets; i++) {
-                const spreadAngle = player.angle + (Math.random() - 0.5) * weapon.spread;
+                const aimSpreadReduction = player.isAiming ? 0.5 : 1;
+                const spreadAngle = player.angle + (Math.random() - 0.5) * weapon.spread * aimSpreadReduction;
                 const hit = castRay(player.x, player.y, spreadAngle, weapon.range);
                 
                 // Проверка попадания по врагам
@@ -1039,40 +1395,46 @@
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const angle = Math.atan2(dy, dx);
                     
-                    if (distance < weapon.range && Math.abs(angle - spreadAngle) < 0.1) {
+                    if (distance < weapon.range && Math.abs(angle - spreadAngle) < 0.15) {
                         let damage = weapon.damage;
                         
-                        // Модификация урона по расстоянию
-                        if (distance > weapon.range * 0.7) {
-                            damage *= 0.5;
+                        // Модификация урона
+                        if (distance > weapon.range * 0.6) {
+                            damage *= 0.7;
+                        }
+                        
+                        if (player.isAiming) {
+                            damage *= 1.5;
                         }
                         
                         enemy.takeDamage(damage, player.x, player.y);
                         
-                        // Создание снаряда для взрывчатки
+                        // Создание взрывного снаряда
                         if (weapon.explosive) {
-                            createProjectile(player.x, player.y, spreadAngle, weapon.damage, true);
+                            createProjectile(player.x, player.y, player.z, spreadAngle, weapon.damage, true);
                         }
                     }
                 });
                 
                 // Эффект попадания в стену
                 if (hit.distance < weapon.range) {
-                    createParticles(hit.x, hit.y, '#888888', 5);
+                    createParticles(hit.x, hit.y, 32, '#888888', 8);
                 }
             }
         }
         
-        function createProjectile(x, y, angle, damage, explosive = false) {
+        function createProjectile(x, y, z, angle, damage, explosive = false) {
             projectiles.push({
                 x: x,
                 y: y,
+                z: z,
                 angle: angle,
-                speed: 8,
+                speed: 10,
                 damage: damage,
                 explosive: explosive,
-                life: 100,
-                size: 4,
+                owner: 'player',
+                life: 200,
+                size: 6,
                 color: explosive ? '#ff6600' : '#ffff00'
             });
         }
@@ -1084,6 +1446,7 @@
             gameState.reloadProgress = 0;
             
             const weapon = weapons[gameState.currentWeapon];
+            showReloadIndicator();
             
             const reloadInterval = setInterval(() => {
                 gameState.reloadProgress++;
@@ -1104,20 +1467,23 @@
         
         // Спавн врагов
         function spawnEnemies() {
-            const enemyCount = 3 + gameState.level * 2;
+            const enemyCount = 4 + gameState.level * 2;
+            const enemyTypes = ['demon', 'imp'];
+            
+            if (gameState.level > 3) enemyTypes.push('baron');
+            if (gameState.level > 7) enemyTypes.push('cyberdemon');
             
             for (let i = 0; i < enemyCount; i++) {
-                let x, y;
-                let attempts = 0;
+                let x, y, attempts = 0;
                 
                 do {
                     x = Math.random() * (MAP_WIDTH - 4) + 2;
                     y = Math.random() * (MAP_HEIGHT - 4) + 2;
                     attempts++;
-                } while (worldMap[Math.floor(y)][Math.floor(x)] !== 0 && attempts < 50);
+                } while (worldMap[Math.floor(y)][Math.floor(x)] !== 0 && attempts < 100);
                 
-                if (attempts < 50) {
-                    const enemyType = Math.random() < 0.7 ? 'demon' : 'imp';
+                if (attempts < 100) {
+                    const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
                     enemies.push(new Enemy(x * CELL_SIZE, y * CELL_SIZE, enemyType));
                 }
             }
@@ -1133,19 +1499,19 @@
                 if (document.body.contains(flash)) {
                     document.body.removeChild(flash);
                 }
-            }, 80);
+            }, 100);
         }
         
         function createDamageFlash() {
             const flash = document.createElement('div');
-            flash.className = 'damage-flash';
+            flash.className = 'damage-overlay';
             document.body.appendChild(flash);
             
             setTimeout(() => {
                 if (document.body.contains(flash)) {
                     document.body.removeChild(flash);
                 }
-            }, 200);
+            }, 300);
         }
         
         function showReloadIndicator() {
@@ -1170,20 +1536,47 @@
             updateProgress();
         }
         
-        // Звуковая система
+        function showLevelComplete() {
+            const complete = document.createElement('div');
+            complete.className = 'level-complete';
+            complete.innerHTML = `
+                <h2>🎉 LEVEL ${gameState.level} COMPLETE! 🎉</h2>
+                <p>Score: ${gameState.score}</p>
+                <p>Kills: ${gameState.kills}</p>
+                <p>Preparing next level...</p>
+            `;
+            document.body.appendChild(complete);
+            
+            setTimeout(() => {
+                if (document.body.contains(complete)) {
+                    document.body.removeChild(complete);
+                }
+                
+                // Следующий уровень
+                gameState.level++;
+                spawnEnemies();
+                
+                // Бонусы за уровень
+                player.health = Math.min(player.maxHealth, player.health + 30);
+                player.armor = Math.min(player.maxArmor, player.armor + 25);
+                gameState.totalAmmo += 30;
+                
+            }, 3000);
+        }
+        
+        // Продвинутая звуковая система
         function playSound(type) {
-            // Создание синтетических звуков
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             
             switch(type) {
-                case 'shotgun':
-                    createShotgunSound(audioContext);
-                    break;
                 case 'rifle':
                     createRifleSound(audioContext);
                     break;
-                case 'pistol':
-                    createPistolSound(audioContext);
+                case 'shotgun':
+                    createShotgunSound(audioContext);
+                    break;
+                case 'sniper':
+                    createSniperSound(audioContext);
                     break;
                 case 'rocket':
                     createRocketSound(audioContext);
@@ -1197,75 +1590,98 @@
                 case 'reload':
                     createReloadSound(audioContext);
                     break;
+                case 'footstep':
+                    createFootstepSound(audioContext);
+                    break;
             }
-        }
-        
-        function createShotgunSound(audioContext) {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.1);
-            
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.2);
         }
         
         function createRifleSound(audioContext) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.05);
-            
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-            
-            oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.1);
-        }
-        
-        function createPistolSound(audioContext) {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
+            oscillator.connect(filter);
+            filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
             oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
             oscillator.frequency.exponentialRampToValueAtTime(80, audioContext.currentTime + 0.08);
             
-            gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+            filter.frequency.setValueAtTime(800, audioContext.currentTime);
+            filter.Q.setValueAtTime(15, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.12);
             
             oscillator.start();
             oscillator.stop(audioContext.currentTime + 0.12);
         }
         
+        function createShotgunSound(audioContext) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(250, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + 0.15);
+            
+            filter.frequency.setValueAtTime(600, audioContext.currentTime);
+            filter.Q.setValueAtTime(20, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.25);
+        }
+        
+        function createSniperSound(audioContext) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(60, audioContext.currentTime + 0.2);
+            
+            filter.frequency.setValueAtTime(1200, audioContext.currentTime);
+            filter.Q.setValueAtTime(25, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.35, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+        
         function createRocketSound(audioContext) {
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
             
-            oscillator.connect(gainNode);
+            oscillator.connect(filter);
+            filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(30, audioContext.currentTime + 0.3);
+            oscillator.frequency.setValueAtTime(180, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(20, audioContext.currentTime + 0.4);
             
-            gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+            filter.frequency.setValueAtTime(400, audioContext.currentTime);
+            filter.Q.setValueAtTime(30, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
             
             oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.4);
+            oscillator.stop(audioContext.currentTime + 0.5);
         }
         
         function createEnemyAttackSound(audioContext) {
@@ -1275,14 +1691,14 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.setValueAtTime(500, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.15);
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.2);
             
-            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
             
             oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.2);
+            oscillator.stop(audioContext.currentTime + 0.3);
         }
         
         function createEnemyDeathSound(audioContext) {
@@ -1292,18 +1708,18 @@
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
-            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.5);
+            oscillator.frequency.setValueAtTime(1000, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 0.6);
             
-            gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.6);
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
             
             oscillator.start();
-            oscillator.stop(audioContext.currentTime + 0.6);
+            oscillator.stop(audioContext.currentTime + 0.8);
         }
         
         function createReloadSound(audioContext) {
-            // Звук перезарядки из двух частей
+            // Звук перезарядки состоит из нескольких частей
             const oscillator1 = audioContext.createOscillator();
             const oscillator2 = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -1312,28 +1728,47 @@
             oscillator2.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator1.frequency.setValueAtTime(800, audioContext.currentTime);
-            oscillator1.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            oscillator1.frequency.setValueAtTime(1200, audioContext.currentTime);
+            oscillator1.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.15);
             
-            oscillator2.frequency.setValueAtTime(1200, audioContext.currentTime + 0.15);
-            oscillator2.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.25);
+            oscillator2.frequency.setValueAtTime(1800, audioContext.currentTime + 0.2);
+            oscillator2.frequency.exponentialRampToValueAtTime(900, audioContext.currentTime + 0.35);
             
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
             
             oscillator1.start();
-            oscillator1.stop(audioContext.currentTime + 0.1);
-            oscillator2.start(audioContext.currentTime + 0.15);
-            oscillator2.stop(audioContext.currentTime + 0.25);
+            oscillator1.stop(audioContext.currentTime + 0.15);
+            oscillator2.start(audioContext.currentTime + 0.2);
+            oscillator2.stop(audioContext.currentTime + 0.35);
+        }
+        
+        function createFootstepSound(audioContext) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.15);
         }
         
         // Миникарта
         function renderMinimap() {
-            minimapCtx.clearRect(0, 0, 120, 120);
+            minimapCtx.clearRect(0, 0, 150, 150);
             
             const scale = 4;
-            const offsetX = 60 - (player.x / CELL_SIZE) * scale;
-            const offsetY = 60 - (player.y / CELL_SIZE) * scale;
+            const centerX = 75;
+            const centerY = 75;
+            const offsetX = centerX - (player.x / CELL_SIZE) * scale;
+            const offsetY = centerY - (player.y / CELL_SIZE) * scale;
             
             // Рендеринг карты
             for (let y = 0; y < MAP_HEIGHT; y++) {
@@ -1341,13 +1776,25 @@
                     const screenX = x * scale + offsetX;
                     const screenY = y * scale + offsetY;
                     
-                    if (screenX > -scale && screenX < 120 && screenY > -scale && screenY < 120) {
-                        if (worldMap[y][x] === 1) {
-                            minimapCtx.fillStyle = '#666666';
-                        } else if (worldMap[y][x] === 2) {
-                            minimapCtx.fillStyle = '#996633';
-                        } else {
-                            minimapCtx.fillStyle = '#111111';
+                    if (screenX > -scale && screenX < 150 && screenY > -scale && screenY < 150) {
+                        switch(worldMap[y][x]) {
+                            case 0:
+                                minimapCtx.fillStyle = '#111111';
+                                break;
+                            case 1:
+                                minimapCtx.fillStyle = '#666666';
+                                break;
+                            case 2:
+                                minimapCtx.fillStyle = '#996633';
+                                break;
+                            case 3:
+                                minimapCtx.fillStyle = '#669966';
+                                break;
+                            case 4:
+                                minimapCtx.fillStyle = '#999966';
+                                break;
+                            default:
+                                minimapCtx.fillStyle = '#333333';
                         }
                         minimapCtx.fillRect(screenX, screenY, scale, scale);
                     }
@@ -1359,27 +1806,43 @@
                 const screenX = (enemy.x / CELL_SIZE) * scale + offsetX;
                 const screenY = (enemy.y / CELL_SIZE) * scale + offsetY;
                 
-                if (screenX > 0 && screenX < 120 && screenY > 0 && screenY < 120) {
-                    minimapCtx.fillStyle = '#ff0000';
-                    minimapCtx.fillRect(screenX - 1, screenY - 1, 2, 2);
+                if (screenX > 0 && screenX < 150 && screenY > 0 && screenY < 150) {
+                    minimapCtx.fillStyle = enemy.color;
+                    minimapCtx.fillRect(screenX - 1, screenY - 1, 3, 3);
+                }
+            });
+            
+            // Рендеринг снарядов
+            projectiles.forEach(proj => {
+                const screenX = (proj.x / CELL_SIZE) * scale + offsetX;
+                const screenY = (proj.y / CELL_SIZE) * scale + offsetY;
+                
+                if (screenX > 0 && screenX < 150 && screenY > 0 && screenY < 150) {
+                    minimapCtx.fillStyle = proj.color;
+                    minimapCtx.fillRect(screenX, screenY, 2, 2);
                 }
             });
             
             // Рендеринг игрока
             minimapCtx.fillStyle = '#00ff00';
-            minimapCtx.fillRect(58, 58, 4, 4);
+            minimapCtx.fillRect(centerX - 2, centerY - 2, 4, 4);
             
             // Направление взгляда
-            const dirLength = 8;
+            const dirLength = 12;
             const dirX = Math.cos(player.angle) * dirLength;
             const dirY = Math.sin(player.angle) * dirLength;
             
             minimapCtx.strokeStyle = '#00ff00';
             minimapCtx.lineWidth = 2;
             minimapCtx.beginPath();
-            minimapCtx.moveTo(60, 60);
-            minimapCtx.lineTo(60 + dirX, 60 + dirY);
+            minimapCtx.moveTo(centerX, centerY);
+            minimapCtx.lineTo(centerX + dirX, centerY + dirY);
             minimapCtx.stroke();
+            
+            // Рамка миникарты
+            minimapCtx.strokeStyle = '#ff0000';
+            minimapCtx.lineWidth = 2;
+            minimapCtx.strokeRect(0, 0, 150, 150);
         }
         
         // Управление
@@ -1387,6 +1850,7 @@
         let mouseX = 0;
         let mouseY = 0;
         let isMouseLocked = false;
+        let lastFootstep = 0;
         
         // События клавиатуры
         document.addEventListener('keydown', (e) => {
@@ -1395,7 +1859,6 @@
             if (e.key === 'r' || e.key === 'R') {
                 if (!gameState.isReloading) {
                     reload();
-                    showReloadIndicator();
                 }
             }
             
@@ -1404,6 +1867,7 @@
                 if (weaponIndex < weapons.length) {
                     gameState.currentWeapon = weaponIndex;
                     gameState.ammo = weapons[weaponIndex].ammo;
+                    updateWeaponDisplay();
                 }
             }
         });
@@ -1412,24 +1876,38 @@
             keys[e.key.toLowerCase()] = false;
         });
         
-        // События мыши
+        // ИСПРАВЛЕННЫЕ события мыши
         document.addEventListener('mousemove', (e) => {
             if (isMouseLocked) {
                 mouseX = e.movementX || 0;
                 mouseY = e.movementY || 0;
                 
-                player.angle += mouseX * 0.003;
-                player.pitch += mouseY * 0.003;
+                // ИСПРАВЛЕНО: правильное направление камеры
+                player.angle += mouseX * player.mouseSensitivity;
+                player.pitch -= mouseY * player.verticalSensitivity; // Минус для правильного направления
                 
                 // Ограничение поворота по вертикали
-                player.pitch = Math.max(-0.5, Math.min(0.5, player.pitch));
+                player.pitch = Math.max(-0.8, Math.min(0.8, player.pitch));
             }
         });
         
         document.addEventListener('mousedown', (e) => {
-            if (e.button === 0 && gameState.running) {
+            if (e.button === 0 && gameState.running) { // ЛКМ
                 shoot();
+            } else if (e.button === 2 && gameState.running) { // ПКМ
+                player.isAiming = true;
             }
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+            if (e.button === 2) { // ПКМ
+                player.isAiming = false;
+            }
+        });
+        
+        // Отключение контекстного меню
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
         });
         
         canvas.addEventListener('click', () => {
@@ -1444,7 +1922,7 @@
             isMouseLocked = document.pointerLockElement === canvas;
         });
         
-        // Обновление игры
+                // Обновление игры
         function update() {
             if (!gameState.running) return;
             
@@ -1455,35 +1933,59 @@
             let moveY = 0;
             
             // Определение скорости
-            const isRunning = keys['shift'];
+            const isRunning = keys['shift'] && player.stamina > 0;
             const currentSpeed = isRunning ? player.runSpeed : player.speed;
             
             // Обновление выносливости
             if (isRunning && (keys['w'] || keys['s'] || keys['a'] || keys['d'])) {
-                player.stamina = Math.max(0, player.stamina - 0.5);
+                player.stamina = Math.max(0, player.stamina - 0.8);
             } else {
-                player.stamina = Math.min(player.maxStamina, player.stamina + 0.3);
+                player.stamina = Math.min(player.maxStamina, player.stamina + 0.4);
             }
             
-            // Движение
-            if (keys['w'] && player.stamina > 0) {
+            // ИСПРАВЛЕННОЕ движение
+            let isMoving = false;
+            if (keys['w']) {
                 moveX += Math.cos(player.angle) * currentSpeed;
                 moveY += Math.sin(player.angle) * currentSpeed;
+                isMoving = true;
             }
             if (keys['s']) {
                 moveX -= Math.cos(player.angle) * currentSpeed;
                 moveY -= Math.sin(player.angle) * currentSpeed;
+                isMoving = true;
             }
             if (keys['a']) {
                 moveX += Math.cos(player.angle - Math.PI/2) * currentSpeed;
                 moveY += Math.sin(player.angle - Math.PI/2) * currentSpeed;
+                isMoving = true;
             }
             if (keys['d']) {
                 moveX += Math.cos(player.angle + Math.PI/2) * currentSpeed;
                 moveY += Math.sin(player.angle + Math.PI/2) * currentSpeed;
+                isMoving = true;
             }
             
-            // Проверка коллизий
+            // Прыжок
+            if (keys[' '] && !player.isJumping) {
+                player.isJumping = true;
+                player.jumpVelocity = -player.jumpSpeed;
+                playSound('footstep');
+            }
+            
+            // Физика прыжка
+            if (player.isJumping) {
+                player.z += player.jumpVelocity;
+                player.jumpVelocity += 0.8; // гравитация
+                
+                if (player.z >= 32) {
+                    player.z = 32;
+                    player.jumpVelocity = 0;
+                    player.isJumping = false;
+                }
+            }
+            
+            // Проверка коллизий и движение
             const newX = player.x + moveX;
             const newY = player.y + moveY;
             
@@ -1495,9 +1997,27 @@
             }
             
             // Эффект качания при ходьбе
-            if (moveX !== 0 || moveY !== 0) {
-                player.bobPhase += 0.2;
-                player.z = Math.sin(player.bobPhase) * 1.5;
+            if (isMoving) {
+                player.bobPhase += 0.25;
+                const bobOffset = Math.sin(player.bobPhase) * 2;
+                player.viewHeight = 32 + bobOffset;
+                
+                // Звуки шагов
+                if (gameState.time - lastFootstep > 20) {
+                    playSound('footstep');
+                    lastFootstep = gameState.time;
+                }
+            } else {
+                player.viewHeight = 32;
+            }
+            
+            // Применение отдачи к углу камеры
+            if (player.kickbackAngle !== 0) {
+                player.angle += player.kickbackAngle;
+                player.kickbackAngle *= 0.8;
+                if (Math.abs(player.kickbackAngle) < 0.001) {
+                    player.kickbackAngle = 0;
+                }
             }
             
             // Обновление врагов
@@ -1512,31 +2032,41 @@
                 return particle.life > 0;
             });
             
+            // Обновление powerups
+            powerups = powerups.filter(powerup => {
+                powerup.rotation += 0.1;
+                
+                // Проверка сбора
+                const dx = powerup.x - player.x;
+                const dy = powerup.y - player.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                
+                if (distance < 40) {
+                    collectPowerup(powerup);
+                    return false;
+                }
+                
+                return powerup.life > 0;
+            });
+            
             // Проверка конца уровня
             if (enemies.length === 0) {
-                gameState.level++;
-                gameState.difficulty += 0.2;
-                
-                // Восстановление здоровья и брони
-                player.health = Math.min(player.maxHealth, player.health + 30);
-                player.armor = Math.min(player.maxArmor, player.armor + 20);
-                
-                // Дополнительные патроны
-                gameState.totalAmmo += 20;
-                
-                spawnEnemies();
+                showLevelComplete();
             }
             
             // Обновление UI
             updateUI();
+            
+            // Проверка смерти игрока
+            if (player.health <= 0) {
+                gameOver();
+            }
         }
         
         function canPlayerMoveTo(x, y) {
-            const margin = 24;
-            const mapX = Math.floor(x / CELL_SIZE);
-            const mapY = Math.floor(y / CELL_SIZE);
+            const margin = 30;
             
-            // Проверка углов игрока
+            // Проверка углов игрока с запасом
             const corners = [
                 { x: x - margin, y: y - margin },
                 { x: x + margin, y: y - margin },
@@ -1545,12 +2075,12 @@
             ];
             
             for (let corner of corners) {
-                const cornerMapX = Math.floor(corner.x / CELL_SIZE);
-                const cornerMapY = Math.floor(corner.y / CELL_SIZE);
+                const mapX = Math.floor(corner.x / CELL_SIZE);
+                const mapY = Math.floor(corner.y / CELL_SIZE);
                 
-                if (cornerMapX < 0 || cornerMapX >= MAP_WIDTH || 
-                    cornerMapY < 0 || cornerMapY >= MAP_HEIGHT ||
-                    worldMap[cornerMapY][cornerMapX] !== 0) {
+                if (mapX < 0 || mapX >= MAP_WIDTH || 
+                    mapY < 0 || mapY >= MAP_HEIGHT ||
+                    worldMap[mapY][mapX] !== 0) {
                     return false;
                 }
             }
@@ -1572,39 +2102,118 @@
                     worldMap[mapY][mapX] !== 0) {
                     
                     if (proj.explosive) {
-                        // Взрыв
-                        createExplosion(proj.x, proj.y, 20);
+                        createExplosion(proj.x, proj.y, proj.z, 25);
                         
-                        // Урон врагам в радиусе
+                        // Урон в радиусе взрыва
+                        const explosionRadius = 120;
+                        
+                        // Урон врагам
                         enemies.forEach(enemy => {
                             const dx = enemy.x - proj.x;
                             const dy = enemy.y - proj.y;
                             const distance = Math.sqrt(dx * dx + dy * dy);
                             
-                            if (distance < 100) {
-                                const damage = proj.damage * (1 - distance / 100);
+                            if (distance < explosionRadius) {
+                                const damage = proj.damage * (1 - distance / explosionRadius);
                                 enemy.takeDamage(damage, proj.x, proj.y);
                             }
                         });
+                        
+                        // Урон игроку если это снаряд врага
+                        if (proj.owner === 'enemy') {
+                            const dx = player.x - proj.x;
+                            const dy = player.y - proj.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < explosionRadius) {
+                                const damage = proj.damage * (1 - distance / explosionRadius);
+                                
+                                if (player.armor > 0) {
+                                    const armorAbsorbed = Math.min(player.armor, damage * 0.5);
+                                    player.armor -= armorAbsorbed;
+                                    player.health -= (damage - armorAbsorbed);
+                                } else {
+                                    player.health -= damage;
+                                }
+                                
+                                createDamageFlash();
+                            }
+                        }
                     }
                     
                     return false;
                 }
                 
-                // Проверка столкновений с врагами
-                enemies.forEach(enemy => {
-                    const dx = enemy.x - proj.x;
-                    const dy = enemy.y - proj.y;
+                // Проверка столкновений с врагами (для снарядов игрока)
+                if (proj.owner === 'player') {
+                    enemies.forEach(enemy => {
+                        const dx = enemy.x - proj.x;
+                        const dy = enemy.y - proj.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < enemy.size) {
+                            enemy.takeDamage(proj.damage, proj.x, proj.y);
+                            return false;
+                        }
+                    });
+                }
+                
+                // Проверка попадания в игрока (для снарядов врагов)
+                if (proj.owner === 'enemy') {
+                    const dx = player.x - proj.x;
+                    const dy = player.y - proj.y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
-                    if (distance < enemy.size) {
-                        enemy.takeDamage(proj.damage, proj.x, proj.y);
+                    if (distance < 25) {
+                        const damage = proj.damage;
+                        
+                        if (player.armor > 0) {
+                            const armorAbsorbed = Math.min(player.armor, damage * 0.6);
+                            player.armor -= armorAbsorbed;
+                            player.health -= (damage - armorAbsorbed);
+                        } else {
+                            player.health -= damage;
+                        }
+                        
+                        createDamageFlash();
+                        createParticles(proj.x, proj.y, proj.z, '#ff0000', 12);
+                        
                         return false;
                     }
-                });
+                }
                 
                 return proj.life > 0;
             });
+        }
+        
+        function collectPowerup(powerup) {
+            switch(powerup.type) {
+                case 'health':
+                    player.health = Math.min(player.maxHealth, player.health + 50);
+                    break;
+                case 'armor':
+                    player.armor = Math.min(player.maxArmor, player.armor + 50);
+                    break;
+                case 'ammo':
+                    gameState.totalAmmo += 50;
+                    break;
+                case 'weapon':
+                    // Разблокировка нового оружия или улучшение текущего
+                    gameState.totalAmmo += 30;
+                    break;
+            }
+            
+            createParticles(powerup.x, powerup.y, powerup.z, powerup.color, 15);
+            playSound('reload'); // Используем звук перезарядки как звук сбора
+            gameState.score += 50;
+        }
+        
+        function updateWeaponDisplay() {
+            const weapon = weapons[gameState.currentWeapon];
+            document.getElementById('weaponName').textContent = weapon.name;
+            document.getElementById('weaponDamage').textContent = weapon.damage;
+            document.getElementById('weaponAccuracy').textContent = weapon.accuracy + '%';
+            document.getElementById('weaponSprite').textContent = weapon.sprite;
         }
         
         // Отрисовка
@@ -1628,13 +2237,15 @@
             document.getElementById('ammo').textContent = gameState.ammo;
             document.getElementById('totalAmmo').textContent = gameState.totalAmmo;
             document.getElementById('kills').textContent = gameState.kills;
+            document.getElementById('score').textContent = gameState.score;
             document.getElementById('level').textContent = gameState.level;
-            document.getElementById('currentWeapon').textContent = weapons[gameState.currentWeapon].name;
-            document.getElementById('weaponDamage').textContent = weapons[gameState.currentWeapon].damage;
             
-            // Обновление полосы здоровья
+            // Обновление полос
             const healthPercent = Math.max(0, player.health) / player.maxHealth;
             document.getElementById('healthFill').style.width = (healthPercent * 100) + '%';
+            
+            const ammoPercent = gameState.ammo / weapons[gameState.currentWeapon].maxAmmo;
+            document.getElementById('ammoFill').style.width = (ammoPercent * 100) + '%';
             
             // Изменение цвета полосы здоровья
             const healthBar = document.getElementById('healthFill');
@@ -1645,37 +2256,47 @@
             } else {
                 healthBar.style.background = 'linear-gradient(90deg, #ff0000, #ff6666)';
             }
+            
+            // Обновление дисплея оружия
+            updateWeaponDisplay();
         }
         
         // Старт игры
         function startGame() {
             gameState.running = true;
             gameState.health = 100;
-            gameState.armor = 50;
-            gameState.ammo = 8;
-            gameState.totalAmmo = 32;
+            gameState.armor = 100;
+            gameState.ammo = 30;
+            gameState.totalAmmo = 150;
             gameState.kills = 0;
-            gameState.level = 1;
             gameState.score = 0;
+            gameState.level = 1;
             gameState.currentWeapon = 0;
             gameState.isReloading = false;
             gameState.time = 0;
-            gameState.difficulty = 1;
             
             player.health = 100;
-            player.armor = 50;
-            player.x = 200;
-            player.y = 200;
+            player.armor = 100;
+            player.x = 300;
+            player.y = 300;
+            player.z = 32;
             player.angle = 0;
             player.pitch = 0;
             player.stamina = 100;
             player.kickback = 0;
+            player.kickbackAngle = 0;
+            player.isJumping = false;
+            player.jumpVelocity = 0;
+            player.isAiming = false;
             
             enemies = [];
             projectiles = [];
             particles = [];
+            powerups = [];
+            lastFootstep = 0;
             
             spawnEnemies();
+            spawnPowerups();
             
             document.getElementById('startScreen').style.display = 'none';
             canvas.requestPointerLock();
@@ -1683,24 +2304,61 @@
             gameLoop();
         }
         
+        function spawnPowerups() {
+            const powerupTypes = ['health', 'armor', 'ammo', 'weapon'];
+            
+            for (let i = 0; i < 3; i++) {
+                let x, y, attempts = 0;
+                
+                do {
+                    x = Math.random() * (MAP_WIDTH - 4) + 2;
+                    y = Math.random() * (MAP_HEIGHT - 4) + 2;
+                    attempts++;
+                } while (worldMap[Math.floor(y)][Math.floor(x)] !== 0 && attempts < 50);
+                
+                if (attempts < 50) {
+                    const type = powerupTypes[Math.floor(Math.random() * powerupTypes.length)];
+                    const colors = {
+                        'health': '#ff6666',
+                        'armor': '#6666ff',
+                        'ammo': '#ffff66',
+                        'weapon': '#ff66ff'
+                    };
+                    
+                    powerups.push({
+                        x: x * CELL_SIZE,
+                        y: y * CELL_SIZE,
+                        z: 32,
+                        type: type,
+                        color: colors[type],
+                        size: 20,
+                        rotation: 0,
+                        life: 1000
+                    });
+                }
+            }
+        }
+        
         // Конец игры
         function gameOver() {
             gameState.running = false;
             document.exitPointerLock();
             
+            createExplosion(player.x, player.y, player.z, 50);
+            
             setTimeout(() => {
                 document.getElementById('startScreen').innerHTML = `
                     <div class="glow">💀 GAME OVER 💀</div>
-                    <div style="font-size: 20px; margin: 25px 0;">
-                        🏆 Final Score: ${gameState.score}<br>
-                        💀 Enemies Killed: ${gameState.kills}<br>
-                        🎯 Level Reached: ${gameState.level}<br>
-                        ⏱️ Time Survived: ${Math.floor(gameState.time / 60)}s<br><br>
-                        <span style="color: #ffff00; font-size: 22px;">🔥 Click to return to HELL!</span>
+                    <div style="font-size: 22px; margin: 30px 0;">
+                        🏆 Финальный счет: ${gameState.score}<br>
+                        💀 Убито врагов: ${gameState.kills}<br>
+                        🎯 Достигнутый уровень: ${gameState.level}<br>
+                        ⏱️ Время выживания: ${Math.floor(gameState.time / 60)} сек<br><br>
+                        <span style="color: #ffff00; font-size: 24px;">🔥 Кликните для возрождения!</span>
                     </div>
                 `;
                 document.getElementById('startScreen').style.display = 'block';
-            }, 1000);
+            }, 1500);
         }
         
         // Главный игровой цикл
@@ -1719,8 +2377,43 @@
             canvas.style.height = '100vh';
         });
         
+        // Предотвращение выхода из полноэкранного режима по Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && gameState.running) {
+                e.preventDefault();
+                gameState.isPaused = !gameState.isPaused;
+            }
+        });
+        
+        // Обработка потери фокуса
+        window.addEventListener('blur', () => {
+            if (gameState.running) {
+                gameState.isPaused = true;
+            }
+        });
+        
+        window.addEventListener('focus', () => {
+            if (gameState.running && gameState.isPaused) {
+                gameState.isPaused = false;
+                canvas.requestPointerLock();
+            }
+        });
+        
         // Инициализация
         updateUI();
+        updateWeaponDisplay();
+        
+        // Автозапуск звукового контекста при первом взаимодействии
+        document.addEventListener('click', function initAudio() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.resume();
+            } catch (e) {
+                console.log('Audio context initialization failed:', e);
+            }
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+        
     </script>
 </body>
 </html>
