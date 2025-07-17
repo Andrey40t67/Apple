@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Летящий Палец - Мега Проработанная Простота</title>
+    <title>3D Ground Runner - Мега Реклама Стиль</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
         
@@ -15,10 +15,9 @@
         
         body {
             font-family: 'Orbitron', monospace;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             overflow: hidden;
             user-select: none;
-            cursor: none;
         }
         
         #gameContainer {
@@ -28,13 +27,15 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1500px;
         }
         
         #gameCanvas {
             border: 4px solid #00ff41;
             border-radius: 20px;
             box-shadow: 0 0 60px rgba(0,255,65,0.6);
-            background: radial-gradient(circle, #000428, #004e92);
+            background: #000;
+            transform: rotateX(5deg);
         }
         
         #ui {
@@ -45,19 +46,48 @@
             font-weight: bold;
             text-shadow: 0 0 15px #00ff41;
             z-index: 100;
-            font-size: 20px;
+            font-size: 18px;
         }
         
-        #powerDisplay {
+        #upgradePanel {
             position: absolute;
             top: 20px;
             right: 20px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #00ff41;
             color: #00ff41;
-            font-weight: bold;
-            text-shadow: 0 0 15px #00ff41;
+            min-width: 250px;
             z-index: 100;
-            font-size: 18px;
-            text-align: right;
+            box-shadow: 0 0 30px rgba(0,255,65,0.3);
+        }
+        
+        .upgrade-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+        
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.5);
+        }
+        
+        .upgrade-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+            transform: none;
         }
         
         #startScreen {
@@ -82,9 +112,9 @@
             to { text-shadow: 0 0 60px #00ff41, 0 0 90px #00ff41; }
         }
         
-        .power-bar {
+        .progress-bar {
             width: 200px;
-            height: 30px;
+            height: 25px;
             background: rgba(0,0,0,0.6);
             border: 2px solid #00ff41;
             border-radius: 15px;
@@ -92,105 +122,68 @@
             margin: 8px 0;
         }
         
-        .power-fill {
+        .progress-fill {
             height: 100%;
             transition: width 0.3s ease;
             border-radius: 15px;
-        }
-        
-        .power-good {
             background: linear-gradient(90deg, #00ff41, #7fff00);
         }
         
-        .power-bad {
-            background: linear-gradient(90deg, #ff4444, #ff0000);
-        }
-        
-        .challenge-screen {
+        .multiplier-display {
             position: absolute;
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            padding: 40px;
-            border-radius: 25px;
-            border: 4px solid #ffd700;
             color: #ffd700;
-            font-size: 24px;
-            font-weight: bold;
-            text-align: center;
-            z-index: 250;
-            box-shadow: 0 0 80px rgba(255,215,0,0.8);
+            font-size: 48px;
+            font-weight: 900;
+            text-shadow: 0 0 20px #ffd700;
+            z-index: 150;
+            animation: multiplierPulse 0.5s ease-in-out;
         }
         
-        .challenge-button {
-            display: inline-block;
-            padding: 15px 30px;
-            margin: 15px 10px;
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-family: 'Orbitron';
-            font-weight: bold;
-            font-size: 18px;
-            transition: all 0.3s;
-            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
-        }
-        
-        .challenge-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255,107,107,0.6);
-        }
-        
-        .finger-trail {
-            position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(0,255,65,0.8), transparent);
-            animation: trailFade 0.5s ease-out forwards;
-        }
-        
-        @keyframes trailFade {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0); }
+        @keyframes multiplierPulse {
+            0% { transform: translate(-50%, -50%) scale(0); }
+            50% { transform: translate(-50%, -50%) scale(1.5); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
     </style>
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="1200" height="700"></canvas>
+        <canvas id="gameCanvas" width="1400" height="800"></canvas>
         
         <div id="ui">
-            <div style="font-size: 28px;">🎯 Счет: <span id="score">0</span></div>
-            <div style="font-size: 22px;">📊 Уровень: <span id="level">1</span></div>
-            <div style="font-size: 20px;">🚀 Скорость: <span id="speed">1.0</span>x</div>
-            <div style="font-size: 18px;">⭐ Звезды: <span id="stars">0</span></div>
+            <div style="font-size: 24px;">👥 Толпа: <span id="crowdCount">1</span></div>
+            <div style="font-size: 22px;">💰 Монеты: <span id="coins">0</span></div>
+            <div style="font-size: 20px;">🏆 Счет: <span id="score">0</span></div>
+            <div style="font-size: 18px;">📊 Уровень: <span id="level">1</span></div>
+            <div style="font-size: 16px;">🚀 Скорость: <span id="speed">1.0</span>x</div>
+            <div style="font-size: 16px;">💥 Множитель: <span id="multiplier">x1</span></div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="powerBar" style="width: 0%"></div>
+            </div>
         </div>
         
-        <div id="powerDisplay">
-            <div style="font-size: 20px; color: #00ff41;">✨ УЛУЧШЕНИЯ:</div>
-            <div class="power-bar">
-                <div class="power-fill power-good" id="goodPower" style="width: 0%"></div>
-            </div>
-            <div style="font-size: 16px;" id="goodText">Скорость: 1.0x</div>
-            
-            <div style="font-size: 20px; color: #ff4444; margin-top: 15px;">💀 ПРОБЛЕМЫ:</div>
-            <div class="power-bar">
-                <div class="power-fill power-bad" id="badPower" style="width: 0%"></div>
-            </div>
-            <div style="font-size: 16px;" id="badText">Замедление: 0%</div>
+        <div id="upgradePanel">
+            <h3 style="margin-bottom: 15px; text-align: center; color: #ffd700;">⚡ ПРОКАЧКА ТОЛПЫ</h3>
+            <button class="upgrade-btn" id="speedUpgrade">🚀 Скорость (100💰)</button>
+            <button class="upgrade-btn" id="crowdUpgrade">👥 Начальная толпа (150💰)</button>
+            <button class="upgrade-btn" id="magnetUpgrade">🧲 Магнит (200💰)</button>
+            <button class="upgrade-btn" id="shieldUpgrade">🛡️ Щит (300💰)</button>
+            <button class="upgrade-btn" id="multiplierUpgrade">💥 Множитель (500💰)</button>
+            <button class="upgrade-btn" id="powerUpgrade">⚡ Мощь (750💰)</button>
         </div>
         
         <div id="startScreen">
-            <div class="glow">👆 ЛЕТЯЩИЙ ПАЛЕЦ 👆</div>
-            <div style="font-size: 22px; margin-top: 30px;">
-                🎮 Простое управление: просто двигайте мышью!<br>
-                ✨ Собирайте зеленые улучшения<br>
-                💀 Избегайте красных ухудшений<br>
-                🏆 Проходите испытания каждые 10 уровней<br><br>
-                <span style="color: #ffd700; font-size: 24px;">🚀 Кликните для старта!</span>
+            <div class="glow">🏃‍♂️ 3D GROUND RUNNER 🏃‍♂️</div>
+            <div style="font-size: 24px; margin-top: 30px;">
+                🎮 Управление: движение мышью<br>
+                👥 Собирайте людей и создавайте толпу!<br>
+                🚪 Проходите через ворота с числами<br>
+                💰 Избегайте препятствий и собирайте монеты<br>
+                🏆 Побеждайте в финальных битвах!<br><br>
+                <span style="color: #ffd700; font-size: 28px;">🚀 Кликните для старта!</span>
             </div>
         </div>
     </div>
@@ -203,239 +196,405 @@
         let gameState = {
             running: false,
             score: 0,
+            coins: 0,
             level: 1,
-            stars: 0,
             speed: 1.0,
+            crowdCount: 1,
+            multiplier: 1,
+            power: 0,
             mouseX: canvas.width / 2,
             mouseY: canvas.height / 2,
-            powers: {
-                good: 0,
-                bad: 0
-            },
-            inChallenge: false,
-            challengeLevel: 0
+            camera: { x: 0, y: 0, z: 0 },
+            effects: {
+                magnet: { active: false, time: 0 },
+                shield: { active: false, time: 0 },
+                speedBoost: { active: false, time: 0 }
+            }
         };
         
-        // Класс пальца
-        class Finger {
+        // Система прокачки
+        let upgrades = {
+            speed: { level: 1, cost: 100 },
+            crowd: { level: 1, cost: 150 },
+            magnet: { level: 0, cost: 200 },
+            shield: { level: 0, cost: 300 },
+            multiplier: { level: 1, cost: 500 },
+            power: { level: 0, cost: 750 }
+        };
+        
+        // 3D математика для изометрической проекции
+        function project3D(x, y, z) {
+            const scale = 0.8;
+            const isoX = (x - z) * scale;
+            const isoY = (x + z) * scale * 0.5 - y;
+            
+            return {
+                x: isoX + canvas.width / 2,
+                y: isoY + canvas.height / 2,
+                depth: z + y
+            };
+        }
+        
+        // Класс игрока (лидер толпы)
+        class Player {
             constructor() {
-                this.x = canvas.width / 2;
-                this.y = canvas.height / 2;
-                this.size = 40;
-                this.targetX = this.x;
-                this.targetY = this.y;
-                this.smoothing = 0.15;
+                this.x = 0;
+                this.y = 0;
+                this.z = 0;
+                this.targetX = 0;
+                this.targetZ = 0;
+                this.size = 15;
+                this.color = '#ff6b6b';
+                this.animationPhase = 0;
+                this.crowd = [];
                 this.trail = [];
-                this.glowPhase = 0;
-                this.energy = 100;
+                
+                this.initializeCrowd();
+            }
+            
+            initializeCrowd() {
+                this.crowd = [];
+                for (let i = 0; i < gameState.crowdCount; i++) {
+                    this.crowd.push({
+                        x: this.x + (Math.random() - 0.5) * 50,
+                        y: this.y,
+                        z: this.z + (Math.random() - 0.5) * 50,
+                        targetX: this.x,
+                        targetZ: this.z,
+                        size: 10 + Math.random() * 5,
+                        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                        animationPhase: Math.random() * Math.PI * 2,
+                        id: i
+                    });
+                }
             }
             
             update() {
-                // Плавное следование за мышью
-                this.targetX = gameState.mouseX;
-                this.targetY = gameState.mouseY;
+                // Движение к мыши
+                this.targetX = (gameState.mouseX - canvas.width / 2) * 0.8;
+                this.targetZ = (gameState.mouseY - canvas.height / 2) * 0.6;
                 
-                const dx = this.targetX - this.x;
-                const dy = this.targetY - this.y;
+                // Плавное движение
+                this.x += (this.targetX - this.x) * 0.1;
+                this.z += (this.targetZ - this.z) * 0.1;
                 
-                this.x += dx * this.smoothing;
-                this.y += dy * this.smoothing;
+                // Ограничения движения
+                this.x = Math.max(-400, Math.min(400, this.x));
+                this.z = Math.max(-200, Math.min(200, this.z));
                 
-                // Ограничения по краям
-                this.x = Math.max(this.size, Math.min(canvas.width - this.size, this.x));
-                this.y = Math.max(this.size, Math.min(canvas.height - this.size, this.y));
+                this.animationPhase += 0.15;
+                
+                // Обновление толпы
+                this.updateCrowd();
                 
                 // Обновление трейла
-                this.trail.unshift({x: this.x, y: this.y, alpha: 1});
-                if (this.trail.length > 20) this.trail.pop();
+                this.trail.unshift({x: this.x, y: this.y, z: this.z, alpha: 1});
+                if (this.trail.length > 10) this.trail.pop();
+                this.trail.forEach(t => t.alpha -= 0.1);
                 
-                this.trail.forEach(t => t.alpha -= 0.05);
-                this.trail = this.trail.filter(t => t.alpha > 0);
-                
-                this.glowPhase += 0.1;
+                // Обновление эффектов
+                Object.values(gameState.effects).forEach(effect => {
+                    if (effect.active) {
+                        effect.time--;
+                        if (effect.time <= 0) effect.active = false;
+                    }
+                });
+            }
+            
+            updateCrowd() {
+                this.crowd.forEach((member, index) => {
+                    // Формирование в группу
+                    const angle = (index / this.crowd.length) * Math.PI * 2;
+                    const radius = Math.min(30 + index * 5, 100);
+                    
+                    member.targetX = this.x + Math.cos(angle) * radius;
+                    member.targetZ = this.z + Math.sin(angle) * radius;
+                    
+                    // Плавное движение
+                    member.x += (member.targetX - member.x) * 0.08;
+                    member.z += (member.targetZ - member.z) * 0.08;
+                    
+                    member.animationPhase += 0.12;
+                });
+            }
+            
+            addCrowdMember() {
+                if (this.crowd.length < 200) {
+                    this.crowd.push({
+                        x: this.x + (Math.random() - 0.5) * 60,
+                        y: this.y,
+                        z: this.z + (Math.random() - 0.5) * 60,
+                        targetX: this.x,
+                        targetZ: this.z,
+                        size: 10 + Math.random() * 5,
+                        color: `hsl(${Math.random() * 360}, 70%, 60%)`,
+                        animationPhase: Math.random() * Math.PI * 2,
+                        id: this.crowd.length
+                    });
+                    gameState.crowdCount = this.crowd.length;
+                }
+            }
+            
+            removeCrowdMembers(count) {
+                for (let i = 0; i < count && this.crowd.length > 1; i++) {
+                    this.crowd.pop();
+                }
+                gameState.crowdCount = this.crowd.length;
             }
             
             draw() {
-                // Трейл
-                this.trail.forEach((t, i) => {
+                // Отрисовка трейла
+                this.trail.forEach(t => {
+                    if (t.alpha > 0) {
+                        const pos = project3D(t.x, t.y, t.z);
+                        ctx.save();
+                        ctx.globalAlpha = t.alpha * 0.3;
+                        ctx.fillStyle = this.color;
+                        ctx.beginPath();
+                        ctx.arc(pos.x, pos.y, this.size * 0.8, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.restore();
+                    }
+                });
+                
+                // Отрисовка толпы (сортировка по глубине)
+                const sortedCrowd = this.crowd.slice().sort((a, b) => a.z - b.z);
+                
+                sortedCrowd.forEach(member => {
+                    const pos = project3D(member.x, member.y, member.z);
+                    const bounce = Math.sin(member.animationPhase) * 3;
+                    
                     ctx.save();
-                    ctx.globalAlpha = t.alpha * 0.6;
-                    ctx.fillStyle = '#00ff41';
-                    ctx.shadowColor = '#00ff41';
-                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = member.color;
+                    ctx.shadowColor = member.color;
+                    ctx.shadowBlur = 8;
+                    
+                    // Тело
                     ctx.beginPath();
-                    ctx.arc(t.x, t.y, this.size * (1 - i * 0.03), 0, Math.PI * 2);
+                    ctx.arc(pos.x, pos.y - bounce, member.size, 0, Math.PI * 2);
                     ctx.fill();
+                    
+                    // Голова
+                    ctx.fillStyle = '#ffddbb';
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y - bounce - member.size * 0.8, member.size * 0.6, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Глаза
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(pos.x - 3, pos.y - bounce - member.size * 0.8 - 2, 2, 0, Math.PI * 2);
+                    ctx.arc(pos.x + 3, pos.y - bounce - member.size * 0.8 - 2, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                    
                     ctx.restore();
                 });
                 
-                // Основной палец
+                // Отрисовка лидера
+                const pos = project3D(this.x, this.y, this.z);
+                const bounce = Math.sin(this.animationPhase) * 4;
+                
                 ctx.save();
-                ctx.translate(this.x, this.y);
                 
-                // Свечение
-                const glowSize = this.size + Math.sin(this.glowPhase) * 8;
-                ctx.shadowColor = '#00ff41';
-                ctx.shadowBlur = 25;
+                // Эффект щита
+                if (gameState.effects.shield.active) {
+                    ctx.strokeStyle = '#00ffff';
+                    ctx.lineWidth = 4;
+                    ctx.shadowColor = '#00ffff';
+                    ctx.shadowBlur = 20;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y - bounce, this.size + 10, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
                 
-                // Градиент пальца
-                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
-                gradient.addColorStop(0, '#ffddaa');
-                gradient.addColorStop(0.7, '#cc8866');
-                gradient.addColorStop(1, '#996644');
-                
-                ctx.fillStyle = gradient;
+                // Основное тело лидера
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, this.size, this.size * 1.4, 0, 0, Math.PI * 2);
+                ctx.arc(pos.x, pos.y - bounce, this.size, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Ноготь
-                ctx.fillStyle = '#ffffff';
+                // Корона лидера
+                ctx.fillStyle = '#ffd700';
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 10;
                 ctx.beginPath();
-                ctx.ellipse(0, -this.size * 0.8, this.size * 0.6, this.size * 0.4, 0, 0, Math.PI * 2);
+                ctx.arc(pos.x, pos.y - bounce - this.size * 0.9, 8, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Блики
-                ctx.fillStyle = '#ffffff';
-                ctx.globalAlpha = 0.4;
+                // Лицо лидера
+                ctx.fillStyle = '#ffddbb';
                 ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, -this.size * 0.3, this.size * 0.2, this.size * 0.3, 0, 0, Math.PI * 2);
+                ctx.arc(pos.x, pos.y - bounce - this.size * 0.5, this.size * 0.7, 0, Math.PI * 2);
                 ctx.fill();
                 
                 ctx.restore();
-                
-                // Энергетическое кольцо
-                ctx.strokeStyle = '#00ff41';
-                ctx.lineWidth = 4;
-                ctx.shadowColor = '#00ff41';
-                ctx.shadowBlur = 20;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
-                ctx.stroke();
             }
         }
         
-        // Класс улучшений/ухудшений
-        class PowerUp {
-            constructor(x, y, type) {
+        // Класс ворот с числами
+        class Gate {
+            constructor(x, z, operation, value) {
                 this.x = x;
-                this.y = y;
-                this.type = type; // 'good' или 'bad'
-                this.size = 25;
-                this.speed = 2 + gameState.speed;
-                this.rotation = 0;
-                this.rotationSpeed = 0.05;
+                this.y = 0;
+                this.z = z;
+                this.operation = operation; // '+', '-', '*', '/'
+                this.value = value;
+                this.width = 40;
+                this.height = 60;
+                this.color = operation === '+' || operation === '*' ? '#00ff41' : '#ff4444';
+                this.pulsePhase = 0;
                 this.alive = true;
-                this.pulsePhase = Math.random() * Math.PI * 2;
-                this.magnetDistance = 80;
-                this.collected = false;
-                
-                if (type === 'good') {
-                    this.color = '#00ff41';
-                    this.shadowColor = '#00ff41';
-                    this.effects = {
-                        speed: Math.random() * 0.5 + 0.2,
-                        size: Math.random() * 10 + 5,
-                        energy: Math.random() * 20 + 10
-                    };
-                } else {
-                    this.color = '#ff4444';
-                    this.shadowColor = '#ff4444';
-                    this.effects = {
-                        slowdown: Math.random() * 0.3 + 0.1,
-                        shrink: Math.random() * 5 + 2,
-                        drain: Math.random() * 15 + 5
-                    };
-                }
             }
             
             update() {
-                this.y += this.speed;
-                this.rotation += this.rotationSpeed;
-                this.pulsePhase += 0.08;
+                this.z += 2 + gameState.speed;
+                this.pulsePhase += 0.1;
                 
-                // Магнитное притяжение к пальцу
-                const dx = finger.x - this.x;
-                const dy = finger.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < this.magnetDistance) {
-                    const force = (this.magnetDistance - distance) / this.magnetDistance * 0.15;
-                    this.x += dx * force;
-                    this.y += dy * force;
-                }
-                
-                // Удаление за пределами экрана
-                if (this.y > canvas.height + this.size) {
+                if (this.z > 400) {
                     this.alive = false;
                 }
             }
             
             draw() {
+                const pos = project3D(this.x, this.y, this.z);
+                const pulse = Math.sin(this.pulsePhase) * 5;
+                
                 ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation);
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
                 
-                const pulseSize = this.size + Math.sin(this.pulsePhase) * 5;
+                // Ворота
+                ctx.fillRect(pos.x - this.width/2, pos.y - this.height/2 + pulse, this.width, this.height);
                 
-                ctx.shadowColor = this.shadowColor;
-                ctx.shadowBlur = 20;
+                // Текст с операцией
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 24px Orbitron';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.operation + this.value, pos.x, pos.y + 8);
                 
-                if (this.type === 'good') {
-                    // Зеленое улучшение - звезда
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    for (let i = 0; i < 5; i++) {
-                        const angle = (i * Math.PI * 2) / 5 - Math.PI / 2;
-                        const outerRadius = pulseSize;
-                        const innerRadius = pulseSize * 0.5;
-                        
-                        const x1 = Math.cos(angle) * outerRadius;
-                        const y1 = Math.sin(angle) * outerRadius;
-                        const x2 = Math.cos(angle + Math.PI / 5) * innerRadius;
-                        const y2 = Math.sin(angle + Math.PI / 5) * innerRadius;
-                        
-                        if (i === 0) {
-                            ctx.moveTo(x1, y1);
-                        } else {
-                            ctx.lineTo(x1, y1);
-                        }
-                        ctx.lineTo(x2, y2);
+                ctx.restore();
+            }
+        }
+        
+        // Класс монет
+        class Coin {
+            constructor(x, z) {
+                this.x = x;
+                this.y = 0;
+                this.z = z;
+                this.size = 8;
+                this.color = '#ffd700';
+                this.rotationPhase = 0;
+                this.bobPhase = Math.random() * Math.PI * 2;
+                this.alive = true;
+                this.magnetized = false;
+            }
+            
+            update() {
+                this.z += 1.5 + gameState.speed * 0.8;
+                this.rotationPhase += 0.2;
+                this.bobPhase += 0.1;
+                
+                // Магнитный эффект
+                if (gameState.effects.magnet.active) {
+                    const dx = player.x - this.x;
+                    const dz = player.z - this.z;
+                    const distance = Math.sqrt(dx * dx + dz * dz);
+                    
+                    if (distance < 100) {
+                        this.magnetized = true;
+                        this.x += dx * 0.1;
+                        this.z += dz * 0.1;
                     }
+                }
+                
+                if (this.z > 400) {
+                    this.alive = false;
+                }
+            }
+            
+            draw() {
+                const bobOffset = Math.sin(this.bobPhase) * 5;
+                const pos = project3D(this.x, this.y + bobOffset, this.z);
+                
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(this.rotationPhase);
+                
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 10;
+                
+                // Монета
+                ctx.beginPath();
+                ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Символ
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('$', 0, 4);
+                
+                // Эффект магнетизма
+                if (this.magnetized) {
+                    ctx.strokeStyle = '#ff6b6b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.restore();
+            }
+        }
+        
+        // Класс препятствий
+        class Obstacle {
+            constructor(x, z, type) {
+                this.x = x;
+                this.y = 0;
+                this.z = z;
+                this.type = type; // 'wall', 'spike', 'laser'
+                this.width = 30;
+                this.height = 40;
+                this.color = '#ff4444';
+                this.alive = true;
+                this.animationPhase = 0;
+            }
+            
+            update() {
+                this.z += 2 + gameState.speed;
+                this.animationPhase += 0.15;
+                
+                if (this.z > 400) {
+                    this.alive = false;
+                }
+            }
+            
+            draw() {
+                const pos = project3D(this.x, this.y, this.z);
+                
+                ctx.save();
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = this.color;
+                ctx.shadowBlur = 15;
+                
+                if (this.type === 'wall') {
+                    ctx.fillRect(pos.x - this.width/2, pos.y - this.height/2, this.width, this.height);
+                } else if (this.type === 'spike') {
+                    ctx.beginPath();
+                    ctx.moveTo(pos.x, pos.y - this.height/2);
+                    ctx.lineTo(pos.x - this.width/2, pos.y + this.height/2);
+                    ctx.lineTo(pos.x + this.width/2, pos.y + this.height/2);
                     ctx.closePath();
                     ctx.fill();
-                    
-                    // Центральный блик
-                    ctx.fillStyle = '#ffffff';
-                    ctx.globalAlpha = 0.8;
-                    ctx.beginPath();
-                    ctx.arc(0, 0, pulseSize * 0.3, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                } else {
-                    // Красное ухудшение - шипы
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    for (let i = 0; i < 8; i++) {
-                        const angle = (i * Math.PI * 2) / 8;
-                        const radius = i % 2 === 0 ? pulseSize : pulseSize * 0.6;
-                        const x = Math.cos(angle) * radius;
-                        const y = Math.sin(angle) * radius;
-                        
-                        if (i === 0) {
-                            ctx.moveTo(x, y);
-                        } else {
-                            ctx.lineTo(x, y);
-                        }
-                    }
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // Центральное ядро
-                    ctx.fillStyle = '#660000';
-                    ctx.beginPath();
-                    ctx.arc(0, 0, pulseSize * 0.4, 0, Math.PI * 2);
-                    ctx.fill();
+                } else if (this.type === 'laser') {
+                    const pulse = Math.sin(this.animationPhase) * 10;
+                    ctx.fillRect(pos.x - 5, pos.y - this.height/2, 10, this.height + pulse);
                 }
                 
                 ctx.restore();
@@ -444,208 +603,226 @@
         
         // Класс частиц
         class Particle {
-            constructor(x, y, color, life) {
+            constructor(x, y, z, color, life) {
                 this.x = x;
                 this.y = y;
-                this.vx = (Math.random() - 0.5) * 8;
-                this.vy = (Math.random() - 0.5) * 8;
+                this.z = z;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.vz = (Math.random() - 0.5) * 4;
                 this.color = color;
                 this.life = life;
                 this.maxLife = life;
-                this.size = Math.random() * 6 + 3;
-                this.gravity = 0.1;
+                this.size = Math.random() * 5 + 2;
             }
             
             update() {
                 this.x += this.vx;
                 this.y += this.vy;
-                this.vy += this.gravity;
+                this.z += this.vz;
+                this.vy += 0.1; // гравитация
                 this.vx *= 0.98;
                 this.vy *= 0.98;
+                this.vz *= 0.98;
                 this.life--;
                 this.size *= 0.99;
             }
             
             draw() {
+                const pos = project3D(this.x, this.y, this.z);
                 ctx.save();
                 ctx.globalAlpha = this.life / this.maxLife;
                 ctx.fillStyle = this.color;
                 ctx.shadowColor = this.color;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 8;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.arc(pos.x, pos.y, this.size, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
         }
         
         // Игровые объекты
-        let finger = new Finger();
-        let powerUps = [];
+        let player = new Player();
+        let gates = [];
+        let coins = [];
+        let obstacles = [];
         let particles = [];
         let spawnTimer = 0;
-        let backgroundStars = [];
-        let challenges = [];
+        let multiplierDisplay = null;
         
-        // Инициализация звезд фона
-        function initStars() {
-            for (let i = 0; i < 150; i++) {
-                backgroundStars.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 3 + 1,
-                    speed: Math.random() * 2 + 1,
-                    alpha: Math.random() * 0.8 + 0.2
-                });
+        // Создание частиц
+        function createParticles(x, y, z, color, count) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(x, y, z, color, 40));
             }
         }
         
+        // Отображение множителя
+        function showMultiplier(text) {
+            multiplierDisplay = { text: text, time: 60 };
+            const div = document.createElement('div');
+            div.className = 'multiplier-display';
+            div.textContent = text;
+            document.body.appendChild(div);
+            
+            setTimeout(() => {
+                if (document.body.contains(div)) {
+                    document.body.removeChild(div);
+                }
+            }, 500);
+        }
+        
         // Спавн объектов
-        function spawnPowerUps() {
+        function spawnObjects() {
             spawnTimer++;
             
-            if (spawnTimer % Math.max(40 - gameState.level, 20) === 0) {
-                const type = Math.random() < 0.6 ? 'good' : 'bad';
-                const x = Math.random() * (canvas.width - 100) + 50;
-                powerUps.push(new PowerUp(x, -50, type));
+            // Ворота
+            if (spawnTimer % 120 === 0) {
+                const operations = ['+', '-', '*'];
+                const operation = operations[Math.floor(Math.random() * operations.length)];
+                let value;
+                
+                if (operation === '+') {
+                    value = Math.floor(Math.random() * 10) + 1;
+                } else if (operation === '-') {
+                    value = Math.floor(Math.random() * 5) + 1;
+                } else if (operation === '*') {
+                    value = Math.floor(Math.random() * 3) + 2;
+                }
+                
+                gates.push(new Gate((Math.random() - 0.5) * 600, -600, operation, value));
+            }
+            
+            // Монеты
+            if (spawnTimer % 40 === 0) {
+                for (let i = 0; i < 3; i++) {
+                    coins.push(new Coin((Math.random() - 0.5) * 500, -600 - i * 30));
+                }
+            }
+            
+            // Препятствия
+            if (spawnTimer % 80 === 0) {
+                const types = ['wall', 'spike', 'laser'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                obstacles.push(new Obstacle((Math.random() - 0.5) * 400, -600, type));
             }
         }
         
         // Проверка столкновений
         function checkCollisions() {
-            powerUps.forEach((powerUp, i) => {
-                const dx = finger.x - powerUp.x;
-                const dy = finger.y - powerUp.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+            // Столкновения с воротами
+            gates.forEach((gate, i) => {
+                const dx = player.x - gate.x;
+                const dz = player.z - gate.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
                 
-                if (distance < finger.size + powerUp.size && !powerUp.collected) {
-                    powerUp.collected = true;
+                if (distance < 50) {
+                    let newCount = gameState.crowdCount;
                     
-                    // Создание частиц
-                    for (let j = 0; j < 15; j++) {
-                        particles.push(new Particle(powerUp.x, powerUp.y, powerUp.color, 40));
+                    if (gate.operation === '+') {
+                        newCount += gate.value;
+                    } else if (gate.operation === '-') {
+                        newCount = Math.max(1, newCount - gate.value);
+                    } else if (gate.operation === '*') {
+                        newCount = Math.min(200, newCount * gate.value);
                     }
                     
-                    if (powerUp.type === 'good') {
-                        gameState.powers.good = Math.min(100, gameState.powers.good + 10);
-                        gameState.speed += powerUp.effects.speed;
-                        gameState.score += 100;
-                        gameState.stars += 1;
+                    const diff = newCount - gameState.crowdCount;
+                    if (diff > 0) {
+                        for (let j = 0; j < diff; j++) {
+                            player.addCrowdMember();
+                        }
+                        showMultiplier(`+${diff}`);
+                    } else if (diff < 0) {
+                        player.removeCrowdMembers(-diff);
+                        showMultiplier(`${diff}`);
+                    }
+                    
+                    createParticles(gate.x, gate.y, gate.z, gate.color, 20);
+                    gameState.score += Math.abs(diff) * 10;
+                    gates.splice(i, 1);
+                }
+            });
+            
+            // Сбор монет
+            coins.forEach((coin, i) => {
+                const dx = player.x - coin.x;
+                const dz = player.z - coin.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance < 30) {
+                    createParticles(coin.x, coin.y, coin.z, coin.color, 10);
+                    gameState.coins += gameState.multiplier;
+                    gameState.score += 25 * gameState.multiplier;
+                    coins.splice(i, 1);
+                }
+            });
+            
+            // Столкновения с препятствиями
+            obstacles.forEach((obstacle, i) => {
+                const dx = player.x - obstacle.x;
+                const dz = player.z - obstacle.z;
+                const distance = Math.sqrt(dx * dx + dz * dz);
+                
+                if (distance < 40) {
+                    if (gameState.effects.shield.active) {
+                        createParticles(obstacle.x, obstacle.y, obstacle.z, '#00ffff', 15);
+                        obstacles.splice(i, 1);
+                        gameState.score += 50;
                     } else {
-                        gameState.powers.bad = Math.min(100, gameState.powers.bad + 15);
-                        gameState.speed = Math.max(0.3, gameState.speed - powerUp.effects.slowdown);
-                        gameState.score += 25;
+                        player.removeCrowdMembers(Math.min(5, gameState.crowdCount - 1));
+                        createParticles(obstacle.x, obstacle.y, obstacle.z, '#ff0000', 20);
+                        obstacles.splice(i, 1);
+                        
+                        if (gameState.crowdCount <= 0) {
+                            gameOver();
+                        }
                     }
-                    
-                    powerUps.splice(i, 1);
                 }
             });
         }
         
-        // Система испытаний
-        function checkChallenges() {
-            if (gameState.level % 10 === 0 && gameState.level !== gameState.challengeLevel) {
-                gameState.challengeLevel = gameState.level;
-                startChallenge();
-            }
-        }
-        
-        function startChallenge() {
-            gameState.inChallenge = true;
-            gameState.running = false;
+        // Отрисовка земли
+        function drawGround() {
+            ctx.fillStyle = '#2d5a2d';
             
-            const challenges = [
-                {
-                    title: "🎯 ИСПЫТАНИЕ ТОЧНОСТИ",
-                    description: "Наведите палец на цель и удерживайте 3 секунды",
-                    type: "precision"
-                },
-                {
-                    title: "⚡ ИСПЫТАНИЕ СКОРОСТИ",
-                    description: "Соберите 10 улучшений за 30 секунд",
-                    type: "speed"
-                },
-                {
-                    title: "🛡️ ИСПЫТАНИЕ ВЫНОСЛИВОСТИ",
-                    description: "Избегайте ухудшений 45 секунд",
-                    type: "endurance"
+            // Сетка земли
+            for (let x = -800; x <= 800; x += 100) {
+                for (let z = -400; z <= 400; z += 100) {
+                    const pos1 = project3D(x, 0, z);
+                    const pos2 = project3D(x + 100, 0, z);
+                    const pos3 = project3D(x + 100, 0, z + 100);
+                    const pos4 = project3D(x, 0, z + 100);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(pos1.x, pos1.y);
+                    ctx.lineTo(pos2.x, pos2.y);
+                    ctx.lineTo(pos3.x, pos3.y);
+                    ctx.lineTo(pos4.x, pos4.y);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Сетка
+                    ctx.strokeStyle = '#1a3d1a';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
                 }
-            ];
-            
-            const challenge = challenges[Math.floor(Math.random() * challenges.length)];
-            
-            document.getElementById('gameContainer').innerHTML += `
-                <div class="challenge-screen" id="challengeScreen">
-                    <h2>${challenge.title}</h2>
-                    <p style="margin: 20px 0; font-size: 18px;">${challenge.description}</p>
-                    <div>
-                        <button class="challenge-button" onclick="acceptChallenge('${challenge.type}')">✅ ПРИНЯТЬ</button>
-                        <button class="challenge-button" onclick="skipChallenge()">⏭️ ПРОПУСТИТЬ</button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function acceptChallenge(type) {
-            document.getElementById('challengeScreen').remove();
-            gameState.inChallenge = false;
-            gameState.running = true;
-            
-            // Бонусы за принятие испытания
-            gameState.score += 500;
-            gameState.stars += 5;
-            gameState.powers.good = Math.min(100, gameState.powers.good + 20);
-        }
-        
-        function skipChallenge() {
-            document.getElementById('challengeScreen').remove();
-            gameState.inChallenge = false;
-            gameState.running = true;
-        }
-        
-        // Создание частиц взрыва
-        function createExplosion(x, y, color, count) {
-            for (let i = 0; i < count; i++) {
-                particles.push(new Particle(x, y, color, 60));
             }
         }
         
         // Отрисовка фона
         function drawBackground() {
-            // Градиент фона
-            const gradient = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 0, canvas.width/2, canvas.height/2, canvas.width);
-            gradient.addColorStop(0, '#001122');
-            gradient.addColorStop(1, '#000408');
+            // Градиент неба
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a3a');
+            gradient.addColorStop(1, '#2d2d5a');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Движущиеся звезды
-            backgroundStars.forEach(star => {
-                star.y += star.speed + gameState.speed;
-                if (star.y > canvas.height) {
-                    star.y = -10;
-                    star.x = Math.random() * canvas.width;
-                }
-                
-                ctx.save();
-                ctx.globalAlpha = star.alpha;
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = '#ffffff';
-                ctx.shadowBlur = 5;
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            });
-            
-            // Эффект скорости
-            if (gameState.speed > 2) {
-                ctx.save();
-                ctx.globalAlpha = (gameState.speed - 2) / 5;
-                ctx.fillStyle = '#004400';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.restore();
-            }
+            // Горизонт
+            ctx.fillStyle = '#404070';
+            ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
         }
         
         // Основной игровой цикл
@@ -653,40 +830,51 @@
             if (!gameState.running) return;
             
             // Обновление объектов
-            finger.update();
+            player.update();
             
-            spawnPowerUps();
+            spawnObjects();
             
-            powerUps = powerUps.filter(p => {
-                p.update();
-                return p.alive;
+            gates = gates.filter(gate => {
+                gate.update();
+                return gate.alive;
             });
             
-            particles = particles.filter(p => {
-                p.update();
-                return p.life > 0;
+            coins = coins.filter(coin => {
+                coin.update();
+                return coin.alive;
+            });
+            
+            obstacles = obstacles.filter(obstacle => {
+                obstacle.update();
+                return obstacle.alive;
+            });
+            
+            particles = particles.filter(particle => {
+                particle.update();
+                return particle.life > 0;
             });
             
             // Проверка столкновений
             checkCollisions();
             
-            // Постепенное уменьшение эффектов
-            gameState.powers.good = Math.max(0, gameState.powers.good - 0.2);
-            gameState.powers.bad = Math.max(0, gameState.powers.bad - 0.3);
-            
             // Увеличение уровня
-            if (gameState.score > gameState.level * 1000) {
+            if (gameState.score > gameState.level * 2000) {
                 gameState.level++;
-                createExplosion(finger.x, finger.y, '#ffd700', 30);
-                checkChallenges();
+                gameState.speed += 0.3;
+                createParticles(player.x, player.y, player.z, '#ffd700', 30);
             }
             
             // Отрисовка
             drawBackground();
+            drawGround();
             
-            powerUps.forEach(p => p.draw());
+            // Отрисовка всех объектов (сортировка по глубине)
+            const allObjects = [...gates, ...coins, ...obstacles];
+            allObjects.sort((a, b) => a.z - b.z);
+            
+            allObjects.forEach(obj => obj.draw());
             particles.forEach(p => p.draw());
-            finger.draw();
+            player.draw();
             
             // Обновление UI
             updateUI();
@@ -696,32 +884,86 @@
         
         // Обновление интерфейса
         function updateUI() {
+            document.getElementById('crowdCount').textContent = gameState.crowdCount;
+            document.getElementById('coins').textContent = gameState.coins;
             document.getElementById('score').textContent = gameState.score;
             document.getElementById('level').textContent = gameState.level;
             document.getElementById('speed').textContent = gameState.speed.toFixed(1);
-            document.getElementById('stars').textContent = gameState.stars;
+            document.getElementById('multiplier').textContent = 'x' + gameState.multiplier;
             
-            // Обновление полос силы
-            document.getElementById('goodPower').style.width = gameState.powers.good + '%';
-            document.getElementById('badPower').style.width = gameState.powers.bad + '%';
+            const powerPercentage = Math.min(100, gameState.power);
+            document.getElementById('powerBar').style.width = powerPercentage + '%';
             
-            document.getElementById('goodText').textContent = `Скорость: ${gameState.speed.toFixed(1)}x`;
-            document.getElementById('badText').textContent = `Замедление: ${gameState.powers.bad.toFixed(0)}%`;
+            updateUpgradeButtons();
+        }
+        
+        // Обновление кнопок прокачки
+        function updateUpgradeButtons() {
+            const buttons = {
+                'speedUpgrade': upgrades.speed,
+                'crowdUpgrade': upgrades.crowd,
+                'magnetUpgrade': upgrades.magnet,
+                'shieldUpgrade': upgrades.shield,
+                'multiplierUpgrade': upgrades.multiplier,
+                'powerUpgrade': upgrades.power
+            };
+            
+            Object.entries(buttons).forEach(([id, upgrade]) => {
+                const button = document.getElementById(id);
+                const canAfford = gameState.coins >= upgrade.cost;
+                button.disabled = !canAfford;
+                button.style.opacity = canAfford ? '1' : '0.5';
+                
+                const name = button.textContent.split('(')[0];
+                button.textContent = `${name}(${upgrade.cost}💰) Ур.${upgrade.level}`;
+            });
+        }
+        
+        // Система прокачки
+        function buyUpgrade(type) {
+            const upgrade = upgrades[type];
+            if (gameState.coins >= upgrade.cost) {
+                gameState.coins -= upgrade.cost;
+                upgrade.level++;
+                upgrade.cost = Math.floor(upgrade.cost * 1.5);
+                
+                if (type === 'speed') {
+                    gameState.speed += 0.2;
+                } else if (type === 'crowd') {
+                    gameState.crowdCount += 2;
+                    player.addCrowdMember();
+                    player.addCrowdMember();
+                } else if (type === 'magnet') {
+                    gameState.effects.magnet.active = true;
+                    gameState.effects.magnet.time = 600;
+                } else if (type === 'shield') {
+                    gameState.effects.shield.active = true;
+                    gameState.effects.shield.time = 400;
+                } else if (type === 'multiplier') {
+                    gameState.multiplier++;
+                } else if (type === 'power') {
+                    gameState.power = Math.min(100, gameState.power + 20);
+                }
+                
+                createParticles(player.x, player.y, player.z, '#00ff00', 20);
+            }
         }
         
         // Старт игры
         function startGame() {
             gameState.running = true;
             gameState.score = 0;
+            gameState.coins = 0;
             gameState.level = 1;
-            gameState.stars = 0;
             gameState.speed = 1.0;
-            gameState.powers = { good: 0, bad: 0 };
-            gameState.inChallenge = false;
-            gameState.challengeLevel = 0;
+            gameState.crowdCount = 1;
+            gameState.multiplier = 1;
+            gameState.power = 0;
             
-            finger = new Finger();
-            powerUps = [];
+            player = new Player();
+            gates = [];
+            coins = [];
+            obstacles = [];
             particles = [];
             spawnTimer = 0;
             
@@ -732,22 +974,24 @@
         // Конец игры
         function gameOver() {
             gameState.running = false;
+            createParticles(player.x, player.y, player.z, '#ff0000', 50);
             
             setTimeout(() => {
                 document.getElementById('startScreen').innerHTML = `
-                    <div class="glow">🏆 РЕЗУЛЬТАТ ПОЛЕТА!</div>
+                    <div class="glow">🏆 РЕЗУЛЬТАТ ЗАБЕГА!</div>
                     <div style="font-size: 24px; margin: 25px 0;">
-                        🎯 Финальный счет: ${gameState.score}<br>
+                        👥 Максимальная толпа: ${gameState.crowdCount}<br>
+                        💰 Собрано монет: ${gameState.coins}<br>
+                        🏆 Финальный счет: ${gameState.score}<br>
                         📊 Достигнутый уровень: ${gameState.level}<br>
-                        ⭐ Собрано звезд: ${gameState.stars}<br>
                         🚀 Максимальная скорость: ${gameState.speed.toFixed(1)}x
                     </div>
                     <div style="font-size: 20px; color: #ffd700;">
-                        👆 Кликните для нового полета!
+                        🏃‍♂️ Кликните для нового забега!
                     </div>
                 `;
                 document.getElementById('startScreen').style.display = 'block';
-            }, 1000);
+            }, 1500);
         }
         
         // События
@@ -758,17 +1002,20 @@
         });
         
         canvas.addEventListener('click', (e) => {
-            if (!gameState.running && !gameState.inChallenge) {
+            if (!gameState.running) {
                 startGame();
             }
         });
         
-        // Глобальные функции для испытаний
-        window.acceptChallenge = acceptChallenge;
-        window.skipChallenge = skipChallenge;
+        // Кнопки прокачки
+        document.getElementById('speedUpgrade').addEventListener('click', () => buyUpgrade('speed'));
+        document.getElementById('crowdUpgrade').addEventListener('click', () => buyUpgrade('crowd'));
+        document.getElementById('magnetUpgrade').addEventListener('click', () => buyUpgrade('magnet'));
+        document.getElementById('shieldUpgrade').addEventListener('click', () => buyUpgrade('shield'));
+        document.getElementById('multiplierUpgrade').addEventListener('click', () => buyUpgrade('multiplier'));
+        document.getElementById('powerUpgrade').addEventListener('click', () => buyUpgrade('power'));
         
         // Инициализация
-        initStars();
         updateUI();
     </script>
 </body>
